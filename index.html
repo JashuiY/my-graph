@@ -382,7 +382,7 @@
 
   document.getElementById("mapa").on('plotly_click', function(data2) {
     var punto = data2.points[0];
-    var unidad_deseada = punto.text;
+    unidad_deseada = punto.text;
     console.log("Clic en:", unidad_deseada);
 
     // Actualizando Graficas
@@ -393,7 +393,7 @@
 
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
-    var desempeño = punto.label;
+    desempeño = punto.label;
     console.log(desempeño);
     // Actualizando Graficas
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
@@ -402,7 +402,7 @@
 
   document.getElementById("indicadores_1").on('plotly_click', function(data4) {
     var punto = data4.points[0];
-    var indicador_deseado = punto.label;
+    indicador_deseado = punto.label;
     console.log(desempeño);
     // Actualizando Graficas
     actualizarGrafica4(datos, unidad_deseada, indicador_deseado);
