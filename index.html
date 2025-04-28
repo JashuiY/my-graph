@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Desde Google Sheets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     body { 
@@ -58,26 +59,23 @@
       margin-bottom: 20px;
       margin-left: auto;
       margin-right: auto;
-      width: 100%;
+      width: 50%;
       align-items: center;
     }
     .grafica {
       flex: 1;
-      height: 600px;
+      height: 500px;
     }
     #mapa {
       flex: 1;
-      height: 600px;
       max-width: 60%;
     }
     #desempeños {
       flex: 1;
-      height: 600px;
       max-width: 40%;
     }
     #indicadores_1 {
       flex: 1;
-      height: 600px;
       max-width: 50%;
     }
     /*style="width: 50%; max-width: 900px; height: 500px;"*/
@@ -252,12 +250,20 @@
     });
   }
 
-  function actualizarGrafica2(datos, unidad_deseada, fecha_deseada) {
+  function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
     //const labels = ["Esperado", "Bajo", "Medio", "Sin datos"];
+    const pulled = [0, 0, 0, 0];
     const values = [conteo.green, conteo.red, conteo.orange, conteo.white];
     const colors = ["green", "red", "orange", "lightgray"];
+
+    index_color = labels.indexOf(desempeño);
+    pulled[index_color] = 0.1;
+    titulo = unidad_deseada;
+    const reg_exp = /(?<=\d{2})\s/;
+    titulo = titulo.replace(reg_exp, "<br>");
+
     // console.log(datosFiltrados);
     Plotly.react("desempeños", 
       [{
@@ -268,16 +274,55 @@
           colors: colors
         },
         textinfo: "label+percent",
-        insidetextorientation: "radial"
+        insidetextorientation: "radial",
+        pull: pulled,
+        hole: 0.3,
+        textfont: {
+          size: 18
+        },
+        hoverinfo: 'label+percent+value',
+        hovertemplate: '<b>%{label}</b><br>%{percent:.1%}<br>Valor: %{value}<extra></extra>'
       }], 
       {
         title: {
-          text: `Indicadores por Desempeño - ${unidad_deseada}`,
+          text: `${titulo}`,
           font: {
             size: 24,
             color: "black"
           },
-          x: 0.5
+          x: 0.5,
+          //position: "center middle"
+        },
+        annotations: [{  // Texto en el centro
+          text: `No.<br>indicadores:<br><br><span style="font-size:30px; margin:25px;">${n_indicadores}</span>`,
+          font: { family: 'Noto Sans', size: 14, color: '#333' },
+          showarrow: false,
+          x: 0.5,  // Posición X (0-1)
+          y: 0.5,  // Posición Y (0-1)
+          xanchor: 'center',
+          yanchor: 'middle',
+          align: 'center'
+        }],
+        showlegend: false,
+        hoverlabel: {
+          shadow: {
+            color: 'rgba(0,0,0,0.5)',
+            x: 3,
+            y: 3,
+            blur: 10
+          }
+        },
+        plot_bgcolor: 'rgba(0,0,0,0)', // Fondo transparente
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        margin: { t: 40, b: 30, l: 25, r: 25 }, // Márgenes ajustados
+        font: {
+          family: 'Noto Sans',
+          color: '#333333'
+        },
+        hovermode: 'closest',
+        animations: {
+          enabled: true,
+          easing: 'elastic-in-out'
         }
       }
     );
@@ -299,16 +344,20 @@
     // Crear arrays para la gráfica
     const indicadores = datosFiltrados2.map(row => row['indicador']);
     const valores = datosFiltrados2.map(row => row['valor']);
+    const textos = valores.map(String);
+    console.log(valores, textos);
     // console.log(datosFiltrados2);
     Plotly.react("indicadores_1", 
       [{
         x: indicadores,
         y: valores,
+        text: textos,
+        textposition: 'outside',
+        texttemplate: '%{y:.1f}',
         type: "bar",
         marker: {
           color: color_deseado  // te explico abajo
         },
-        textinfo: "label+percent",
       }], {
         title: {
           text: `Indicadores con desempeño ${desempeño}`,
@@ -374,6 +423,7 @@
   indicador_deseado = 'DM 01';
   labels = ["Esperado", "Bajo", "Medio", "Sin datos"];
   puntoResaltado = null;
+  n_indicadores = "--";
 
   fetch("https://script.google.com/macros/s/AKfycbxbdwnq17ukuBOPxtHR52a12NcrR4V5LiTujKCPFWMKoYztEFmIBk6pyeyHG2UwVMamog/exec")
     .then(response => response.json())
@@ -389,7 +439,7 @@
       }));
 
     console.log("Termina de preparar los datos. Comienza a graficar.");
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada);
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
   });
@@ -448,6 +498,10 @@
     title: {
       text: `Indicadores por Desempeño`,
       x: 0.5
+    },
+    animations: {
+      enabled: true,
+      easing: 'elastic-in-out'
     }
   }); // desempeños
 
@@ -483,18 +537,19 @@
       },
       //xaxis: { title: "Fechas" },
       yaxis: { title: "Valor" }
-    }); // indicadores_1
+    }); // indicadores_2
 
   console.log('Terminó una gráfica, empezando a comunicarse.');
 
   document.getElementById("mapa").on('plotly_click', function(data2) {
     var punto = data2.points[0];
     unidad_deseada = punto.text;
-    console.log("Clic en:", unidad_deseada);
+    console.log("Clic en:", unidad_deseada, punto);
+    n_indicadores = "--";
 
     // Actualizando Graficas
     actualizarGrafica1(punto);
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada);
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
   });
@@ -502,8 +557,10 @@
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
     desempeño = punto.label;
+    n_indicadores = punto.value;
     console.log(desempeño);
     // Actualizando Graficas
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
   });
