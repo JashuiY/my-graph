@@ -59,7 +59,7 @@
       margin-bottom: 20px;
       margin-left: auto;
       margin-right: auto;
-      width: 100%;
+      width: 50%;
       align-items: center;
     }
     .grafica {
@@ -74,10 +74,6 @@
       flex: 1;
       max-width: 40%;
     }
-    #indicadores_1 {
-      flex: 1;
-      max-width: 50%;
-    }
     /*style="width: 50%; max-width: 900px; height: 500px;"*/
   </style>
 </head>
@@ -89,58 +85,89 @@
   </div>
   <div class="contenedor">
     <div id="indicadores_1" class="grafica"></div>
-    <div id="indicadores_2" class="grafica"></div>
+  </div>
+  <div id='texto_1' class="contenedor"> Análisis </div>
+  <div class="contenedor">
+    <div id="indicadores_2" class="grafica"></div>    
   </div>
 
   <script>
+  function obtenerRangoNumero(valor){
+    if (valor == null || valor === "") {
+      return null;
+    }
+    valor = valor.toString();
+    valor = valor.trim();
+
+    if (valor.includes("o")) {
+      const partes = valor.split("o").map(v => v.trim());
+      return partes.map(parte => obtenerRangoNumero(parte)); // Recursivo para limpiar cada parte
+    }
+
+    if (valor.includes("-")) {
+      const partes = valor.split("-").map(v => parseFloat(v.trim()));
+      return [partes[0], partes[1]];
+    } else if (valor.startsWith(">=")) {
+      return parseFloat(valor.substring(2).trim()) // { tipo: "mayorIgual", valor: parseFloat(valor.substring(2).trim()) };
+    } else if (valor.startsWith("<=")) {
+      return parseFloat(valor.substring(2).trim()) // { tipo: "menorIgual", valor: parseFloat(valor.substring(2).trim()) };
+    } else if (valor.startsWith(">")) {
+      return parseFloat(valor.substring(1).trim()) // { tipo: "mayor", valor: parseFloat(valor.substring(1).trim()) };
+    } else if (valor.startsWith("<")) {
+      return parseFloat(valor.substring(1).trim()) // { tipo: "menor", valor: parseFloat(valor.substring(1).trim()) };
+    } else {
+      return parseFloat(valor);
+    }
+  }
+
   function evaluarCondicion(numero, condicionTexto) {
-      if (!condicionTexto) return false;
-      // Normalizar: quitar espacios, pasar a minúscula
-      condicionTexto = condicionTexto.toLowerCase().replace(/\s+/g, "");
-      // console.log('evaluando..', numero, condicionTexto)
-      // Dividir por "o" (también podrías usar "|" o "," si quisieras)
-      const condiciones = condicionTexto.split("o");
-      // Evaluar cada subcondición
-      return condiciones.some(cond => {
-          if (/^\d+(\.\d+)?$/.test(cond)) {
-            //console.log(numero,'===', cond)
-            return numero === parseFloat(cond);
+    if (!condicionTexto) return false;
+    // Normalizar: quitar espacios, pasar a minúscula
+    condicionTexto = condicionTexto.toLowerCase().replace(/\s+/g, "");
+    // console.log('evaluando..', numero, condicionTexto)
+    // Dividir por "o" (también podrías usar "|" o "," si quisieras)
+    const condiciones = condicionTexto.split("o");
+    // Evaluar cada subcondición
+    return condiciones.some(cond => {
+      if (/^\d+(\.\d+)?$/.test(cond)) {
+        //console.log(numero,'===', cond)
+        return numero === parseFloat(cond);
 
-          } else if (/^<=\d+(\.\d+)?$/.test(cond)) {
-            //console.log(numero,'<=', cond.slice(2))
-            return numero <= parseFloat(cond.slice(2));
+      } else if (/^<=\d+(\.\d+)?$/.test(cond)) {
+        //console.log(numero,'<=', cond.slice(2))
+        return numero <= parseFloat(cond.slice(2));
 
-          } else if (/^>=\d+(\.\d+)?$/.test(cond)) {
-            //console.log(numero,'>=', cond.slice(2))
-            return numero >= parseFloat(cond.slice(2));
+      } else if (/^>=\d+(\.\d+)?$/.test(cond)) {
+        //console.log(numero,'>=', cond.slice(2))
+        return numero >= parseFloat(cond.slice(2));
 
-          } else if (/^<\d+(\.\d+)?$/.test(cond)) {
-            //console.log(numero,'<', cond.slice(1))
-            return numero < parseFloat(cond.slice(1));
+      } else if (/^<\d+(\.\d+)?$/.test(cond)) {
+        //console.log(numero,'<', cond.slice(1))
+        return numero < parseFloat(cond.slice(1));
 
-          } else if (/^>\d+(\.\d+)?$/.test(cond)) {
-            //console.log(numero,'>', cond.slice(1))
-            return numero > parseFloat(cond.slice(1));
+      } else if (/^>\d+(\.\d+)?$/.test(cond)) {
+        //console.log(numero,'>', cond.slice(1))
+        return numero > parseFloat(cond.slice(1));
 
-          } else if (/^\d+(\.\d+)?-\d+(\.\d+)?/.test(cond)) {
-            const [inicio, fin] = cond.split("-").map(Number);
-            //console.log(numero,'>=', inicio, '&&', numero, '<=', fin)
-            return numero >= inicio && numero <= fin;
-          }
-          return false;
-      });
+      } else if (/^\d+(\.\d+)?-\d+(\.\d+)?/.test(cond)) {
+        const [inicio, fin] = cond.split("-").map(Number);
+        //console.log(numero,'>=', inicio, '&&', numero, '<=', fin)
+        return numero >= inicio && numero <= fin;
+      }
+      return false;
+    });
   }  
   
   function calcularColor(valor, esperado, medio, bajo) {
-  if (evaluarCondicion(valor, esperado)) {
-    return "green";
-  } else if (evaluarCondicion(valor, medio)) {
-    return "orange";
-  } else if (evaluarCondicion(valor, bajo)) {
-    return "red";
-  } else {
-    return "white";
-  }
+    if (evaluarCondicion(valor, esperado)) {
+      return "green";
+    } else if (evaluarCondicion(valor, medio)) {
+      return "orange";
+    } else if (evaluarCondicion(valor, bajo)) {
+      return "red";
+    } else {
+      return "white";
+    }
   }
 
   function filtrarUnidadFecha(datos, unidadSeleccionada, fechaSeleccionada) {
@@ -250,7 +277,7 @@
     });
   }
 
-  function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores) {
+  function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
     //const labels = ["Esperado", "Bajo", "Medio", "Sin datos"];
@@ -260,6 +287,8 @@
 
     index_color = labels.indexOf(desempeño);
     pulled[index_color] = 0.1;
+    n_indicadores = values[index_color];
+
     titulo = unidad_deseada;
     const reg_exp = /(?<=\d{2})\s/;
     titulo = titulo.replace(reg_exp, "<br>");
@@ -280,8 +309,8 @@
         textfont: {
           size: 18
         },
-        hoverinfo: 'label+percent+value',
-        hovertemplate: '<b>%{label}</b><br>%{percent:.1%}<br>Valor: %{value}<extra></extra>'
+        hoverinfo: 'none',//'label+percent+value',
+        hovertemplate: '', //'<b>%{label}</b><br>%{percent:.1%}<br>Valor: %{value}<extra></extra>',
       }], 
       {
         title: {
@@ -314,7 +343,7 @@
         },
         plot_bgcolor: 'rgba(0,0,0,0)', // Fondo transparente
         paper_bgcolor: 'rgba(0,0,0,0)',
-        margin: { t: 40, b: 30, l: 25, r: 25 }, // Márgenes ajustados
+        margin: { t: 40, b: 40, l: 30, r: 30 }, // Márgenes ajustados
         font: {
           family: 'Noto Sans',
           color: '#333333'
@@ -341,36 +370,96 @@
     }
 
     const datosFiltrados2 = filtrarDesempeño(datosFiltrados, color_deseado);
+    // 1. Calcular diferencia absoluta valor - esperado
+      let esperado;
+    const datosConError = datosFiltrados2.map(row => {
+      if (desempeño == 'Bajo') {
+        esperado = (row['medio'] != null) ? row['medio'] : row['esperado'];
+      } else if (desempeño == 'Medio'){
+        esperado = row['esperado'];
+      } else if (desempeño == 'Esperado'){
+        esperado = (row['medio'] != null) ? row['medio'] : row['bajo'];
+      }
+      let error;
+
+      if (Array.isArray(esperado)) {
+        errorMin = Math.abs(row['valor'] - parseFloat(esperado[0]));
+        errorMax = Math.abs(row['valor'] - parseFloat(esperado[1]));
+        error = Math.min(errorMin, errorMax);
+      } else {
+        error = Math.abs(row['valor'] - parseFloat(esperado));
+      }
+
+      return {
+        indicador: row['indicador'],
+        error: error,
+        valor: row['valor'],
+        limite: esperado,
+      };
+    });
+
+    // 2. Ordenar por error de menor a mayor
+    datosConError.sort((a, b) => a.error - b.error);
+    console.log(datosConError);
+    /*
+    */
     // Crear arrays para la gráfica
-    const indicadores = datosFiltrados2.map(row => row['indicador']);
-    const valores = datosFiltrados2.map(row => row['valor']);
+    const indicadores = datosConError.map(row => row.indicador);
+    const valores = datosConError.map(row => row.valor);
     const textos = valores.map(String);
-    console.log(valores, textos);
-    // console.log(datosFiltrados2);
+    // console.log(valores, textos);
+    console.log(datosFiltrados2);
     Plotly.react("indicadores_1", 
       [{
+        type: "bar",
         x: indicadores,
         y: valores,
         text: textos,
         textposition: 'outside',
+        cliponaxis: false,
         texttemplate: '%{y:.1f}',
-        type: "bar",
-        marker: {
-          color: color_deseado  // te explico abajo
+        textangle: -90,
+        textfont: {
+          size: 18, 
+          family: 'Noto Sans'
         },
+        marker: {
+          color: color_deseado 
+        },
+        hovertemplate: '<b>%{label}</b><br>%{value:.2f}<extra></extra>',
+        hoverlabel: {
+          bgcolor: color_deseado,
+          //bordercolor: '#000000',
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 16}
+        },
+        margin: { b: 150 }
       }], {
         title: {
-          text: `Indicadores con desempeño ${desempeño}`,
+          text: `Indicadores con desempeño ${desempeño}, ${mes_deseado} ${año_deseado}`,
           font: {
             size: 24,
             color: "black"
           },
           x: 0.5
         },
-        xaxis: { title: "Indicador" },
-        yaxis: { title: "Valor" }
+        //xaxis: { title: "Indicador" },
+        yaxis: { title: "Valor" },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: '#f9f9f9',
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.2)',
+          x: 3,
+          y: 3,
+          blur: 10
+        },
+        uniformtext: {
+          //mode: 'hide', // Oculta etiquetas que no caben
+          minsize: 14   // Tamaño mínimo de fuente
+        }
       }
     );
+    document.getElementById('texto_1').innerHTML = (`Hola ${indicadores.slice(0,5)} - \n`);
     return indicadores;
   }
 
@@ -435,11 +524,14 @@
         indicador: row["INDICADOR"],
         nombre_indicador: row["NOMBRE INDICADOR"],
         valor: parseFloat(row["VALOR"]),
-        color: calcularColor(row["VALOR"], row["ESPERADO"], row["MEDIO"], row["BAJO"])
+        color: calcularColor(row["VALOR"], row["ESPERADO"], row["MEDIO"], row["BAJO"]),
+        esperado: obtenerRangoNumero(row['ESPERADO']),
+        medio: obtenerRangoNumero(row['MEDIO']),
+        bajo: obtenerRangoNumero(row['BAJO'])
       }));
-
+    console.log(datos);
     console.log("Termina de preparar los datos. Comienza a graficar.");
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores);
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
   });
@@ -549,7 +641,7 @@
 
     // Actualizando Graficas
     actualizarGrafica1(punto);
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores);
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
   });
@@ -560,7 +652,7 @@
     n_indicadores = punto.value;
     console.log(desempeño);
     // Actualizando Graficas
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño, n_indicadores);
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
   });
