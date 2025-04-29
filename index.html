@@ -83,6 +83,9 @@
       flex: 1;
       max-width: 40%;
     }
+    #indicadores_1 {
+      height: 700px;
+    }
     /*style="width: 50%; max-width: 900px; height: 500px;"*/
   </style>
 </head>
@@ -105,10 +108,10 @@
 
     <div class="contenedor">
       <table id="tabla" style="font-family: 'Noto Sans'; font-size: 16px; border-collapse: collapse; width: 100%;">
-          <thead>
+          <thead id="encabezado_tabla">
             <tr style="background-color: 'rgba(0,0,0,0)';">
-              <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">Indicadores cercanos a desempeño Medio.</th>
-              <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">Indicadores más bajos.</th>
+              <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">Indicadores cercanos a cambiar.</th>
+              <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">-.</th>
             </tr>
           </thead>
           <tbody id="cuerpo_tabla">
@@ -118,13 +121,17 @@
 
     <div class="contenedor">
       <div class="contenedor_2">
-        <table id="tabla_1" style="font-family: 'Noto Sans'; font-size: 20px; border-collapse: collapse; width: 100%;">
+        <table id="tabla_1" style="font-family: 'Noto Sans'; font-size: 14px; border-collapse: collapse; width: 100%;">
           <thead>
             <tr style="background-color: #f0f0f0;">
-              <th style="padding: 8px; border: 1px none #ccc;">Indicador</th>
-              <th style="padding: 8px; border: 1px none #ccc;">Valor</th>
-              <th style="padding: 8px; border: 1px none #ccc;">Error</th>
-              <th style="padding: 8px; border: 1px none #ccc;">Rango</th>
+              <th style="padding: 8px; border: 1px none #ccc;" rowspan="2">Indicador</th>
+              <th style="padding: 8px; border: 1px none #ccc;" rowspan="2">Valor</th>
+              <th style="padding: 8px; border: 1px none #ccc;" rowspan="2">Error</th>
+              <th style="padding: 8px; border: 1px none #ccc;" colspan="2">Semaforización</th>
+            </tr>
+            <tr style="background-color: #f0f0f0;">
+              <th style="padding: 8px; border: 1px none #ccc;">Actual</th>
+              <th style="padding: 8px; border: 1px none #ccc;">Posible</th>
             </tr>
           </thead>
           <tbody id="cuerpo_tabla_1">
@@ -140,6 +147,46 @@
   </div>
 
   <script>
+  function insertarSaltosLinea(text, maxLineLength) {
+    const words = text.split(' ');
+    let line = '';
+    let result = '';
+
+    for (let word of words) {
+      if ((line + word).length > maxLineLength) {
+        result += line.trim() + '<br>';
+        line = '';
+      }
+      line += word + ' ';
+    }
+
+    result += line.trim(); // Agrega la última línea
+    return result;
+  }
+
+  function calcularError(numero, rango){
+    if (Array.isArray(rango)){
+      if (Array.isArray(rango[0])){
+        err1 = numero - rango[0][0];
+        err2 = numero - rango[0][1];
+        err3 = numero - rango[1][0];
+        err4 = numero - rango[1][1];
+        errores = [err1, err2, err3, err4];
+        errores_abs = [Math.abs(err1), Math.abs(err2), Math.abs(err3), Math.abs(err4)];
+        error_ = Math.min(...errores_abs);
+        index = errores_abs.indexOf(error_);
+        error = errores[index];
+      } else{
+        err1 = numero - rango[0];
+        err2 = numero - rango[1];
+        error = (Math.abs(err1) < Math.abs(err2)) ? err1 : err2;
+      }
+    } else {
+      error = numero - rango;
+    }
+    return error;
+  }
+
   function obtenerRangoNumero(valor){
     if (valor == null || valor === "") {
       return null;
@@ -371,7 +418,7 @@
           //position: "center middle"
         },
         annotations: [{  // Texto en el centro
-          text: `No.<br>indicadores:<br><br><span style="font-size:30px; margin:25px;">${n_indicadores}</span>`,
+          text: `<b>No.<br>indicadores:<br><br><span style="font-size:30px; margin:25px;">${n_indicadores}</span><b>`,
           font: { family: 'Noto Sans', size: 14, color: '#333' },
           showarrow: false,
           x: 0.5,  // Posición X (0-1)
@@ -420,43 +467,45 @@
     }
 
     const datosFiltrados2 = filtrarDesempeño(datosFiltrados, color_deseado);
+    //console.log(datosFiltrados2);
     // Calcular errores y armar nuevo array
     const datosConError = datosFiltrados2.map(row => {
-      let esperado, esperado_, desempeño_2;
+      let esperado, esperado_, desempeño_2, comparadoCon, colorComparado;
+      const indicador = row['indicador'];
+      const valor = row['valor'];
+      const Resperado = row['esperado'];
+      const Rmedio = row['medio'];
+      const Rbajo = row['bajo'];
+      // console.log(indicador, valor);
+      errorEsperado = calcularError(valor, Resperado);
+      errorMedio = calcularError(valor, Rmedio);
+      errorBajo = calcularError(valor, Rbajo);
+      //console.log(errorEsperado, errorMedio, errorBajo);
       if (desempeño == 'Bajo') {
-        esperado = row['medio'] ?? row['esperado'];
-        esperado_ = row['medio_'] ?? row['esperado_'];
-        desempeño_2 = row['medio'] ? labels[2] : labels[0];
+        error = (Math.abs(errorMedio) <= Math.abs(errorEsperado)) ? errorMedio : errorEsperado;
+        errorColor = (Math.abs(errorMedio) < Math.abs(errorEsperado)) ? 'orange' : 'green';
       } else if (desempeño == 'Medio'){
-        esperado = row['esperado'];
-        esperado_ = row['esperado_'];
-        desempeño_2 = labels[0];
-      } else if (desempeño == 'Esperado'){
-        esperado = row['medio'] ?? row['bajo'];
-        esperado_ = row['medio_'] ?? row['bajo_'];
-        desempeño_2 = row['medio'] ? labels[2] : labels[1];
+        error = errorEsperado;
+        errorColor = 'green';
+      } else if (desempeño == 'Esperado') {
+        error = (Math.abs(errorMedio) <= Math.abs(errorBajo)) ? errorMedio : errorBajo;
+        errorColor = (Math.abs(errorMedio) < Math.abs(errorBajo)) ? 'orange' : 'red';
       }
-
-      let error;
-      if (Array.isArray(esperado)) {
-        let err1 = row['valor'] - parseFloat(esperado[0]);
-        let err2 = row['valor'] - parseFloat(esperado[1]);
-        error = Math.abs(err1) < Math.abs(err2) ? err1 : err2;  // con signo
-      } else {
-        error = row['valor'] - parseFloat(esperado); // con signo
-      }
-
+      // console.log(error, errorColor, '-------');
+      valor_esperado = valor - error;
       return {
-        indicador: row['indicador'],
+        indicador: indicador,
         error: error,
-        valor: row['valor'],
-        limite: esperado_
+        valor: valor,
+        limite: valor_esperado,
+        limite_: esperado_,
+        colorError: errorColor,
       };
     });
 
     // Ordenar por valor absoluto del error de menor a mayor
     datosConError.sort((a, b) => Math.abs(a.error) - Math.abs(b.error));
-    console.log(datosConError);
+    // console.log(datosConError);
     /*
     */
     // Crear arrays para la gráfica
@@ -464,29 +513,60 @@
     const valores = datosConError.map(row => row.valor);
     const errores = datosConError.map(row => row.error);
     const limites = datosConError.map(row => row.limite);
-    const textos = valores.map(String);
-    // console.log(valores, textos);
+    const limites_ = datosConError.map(row => row.limite_);
+    const colores_ = datosConError.map(row => row.colorError);
+    const textos = valores.map((valor, i) => {
+      const error_ = errores[i];
+      const signo_ = error >= 0 ? "▲" : "▼"; // Usa el signo correcto
+      return `${valor.toFixed(2)} (${signo_}${Math.abs(error_).toFixed(2)})`;
+    });
+    // console.log(valores, textos, limites);
     // console.log(datosFiltrados2);
     Plotly.react("indicadores_1", 
-      [{
-        type: "bar",
-        x: indicadores,
-        y: valores,
-        text: textos,
-        textposition: 'outside',
-        cliponaxis: false,
-        texttemplate: '%{y:.1f}',
-        textangle: -90,
-        textfont: { size: 18, family: 'Noto Sans' },
-        marker: { color: color_deseado },
-        hovertemplate: '<b>%{label}</b><br>%{value:.2f}<extra></extra>',
-        hoverlabel: {
-          bgcolor: color_deseado,
-          //bordercolor: '#000000',
-          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 16}
+      [
+        {
+          type: "bar",
+          x: indicadores,
+          y: valores,
+          text: textos,
+          textposition: 'outside',
+          cliponaxis: false,
+          texttemplate: ' ',//'%{y:.1f}',
+          //textangle: -90,
+          //textfont: { size: 18, family: 'Noto Sans' },
+          marker: { color: color_deseado },
+          hovertemplate: '<b>%{label}</b><br>%{text}<extra></extra>',
+          hoverlabel: {
+            bgcolor: color_deseado,
+            //bordercolor: '#000000',
+            font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false
         },
-        margin: { b: 150 }
-      }], {
+        // Línea de pasos (valores esperados)
+        {
+          type: "scatter",
+          mode: "lines+markers",
+          x: indicadores,
+          y: limites,
+          name: "Valor esperado",
+          line: {
+            shape: "hvh",  // step graph: horizontal-vertical
+            color: 'black',
+            width: 2,
+            dash: 'dot' // (dot, dash)
+          },
+          marker: {
+            color: colores_,
+            symbol: "cross-thin"
+            //size: 15
+          },
+          //hovertemplate: "<b>%{x}</b><br>Esperado: %{y}<extra></extra>"
+          hovertemplate: "",
+          showlegend: false
+        }
+      ], {
         title: {
           text: `Indicadores con desempeño ${desempeño}, ${mes_deseado} ${año_deseado}`,
           font: { size: 24, color: "black" },
@@ -512,13 +592,15 @@
 
     const cuerpoTabla_1 = document.getElementById("cuerpo_tabla_1");
     cuerpoTabla_1.innerHTML = "";
-    for (i = 0; i < 5; i++){
+    obs_indicadores = (indicadores.length < 5) ? indicadores.length : 5;
+    for (i = 0; i < obs_indicadores; i++){
       const fila = document.createElement("tr");
       fila.innerHTML = `
-        <td style="padding: 8px; border: 1px solid #ccc;">${indicadores[i]}</td>
-        <td style="padding: 8px; border: 1px solid #ccc;">${valores[i].toFixed(2)}</td>
-        <td style="padding: 8px; border: 1px solid #ccc;">${errores[i].toFixed(2)}</td>
-        <td style="padding: 8px; border: 1px solid #ccc;">${limites[i]}</td>
+        <td style="padding: 4px; border: 1px solid #ccc;">${indicadores[i]}</td>
+        <td style="padding: 4px; border: 1px solid #ccc;">${valores[i].toFixed(2)}</td>
+        <td style="padding: 4px; border: 1px solid #ccc;">${errores[i].toFixed(2)}</td>
+        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${color_deseado}">■</td>
+        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${colores_[i]}">■</td>
       `;
       cuerpoTabla_1.appendChild(fila);
       //document.getElementById('texto_1').innerHTML += (`<br>${} &ensp; Le falta ${} para llegar al nivel ${desempeño_2}.`);      
@@ -533,17 +615,34 @@
     const fechas = datosFiltrados3.map(row => row['fecha']);
     const valores = datosFiltrados3.map(row => row['valor']);
     const colores = datosFiltrados3.map(row => row['color']);
-    // console.log(datosFiltrados3);
+    const textos = datosFiltrados3.map(row => row['valor'].toFixed(2));
+    const nombres_indicadores = datosFiltrados3.map(row => row['nombre_indicador']);
+    console.log(datosFiltrados3);
+    const nombre_indicador = nombres_indicadores[0];
+    const nombre_formateado = insertarSaltosLinea(nombre_indicador, 100);
     Plotly.react("indicadores_2", [{
       x: fechas,
       y: valores,
+      text: textos,
       type: "bar",
+      texttemplate: '%{y:.1f}',
+      textangle: -90,
+      textfont: { size: 18, family: 'Noto Sans' },
+      marker: { color: colores },
+      hovertemplate: '<b>%{label}</b><br>%{value}<extra></extra>',
+      hoverlabel: {
+        bgcolor: colores,
+        //bordercolor: '#000000',
+        font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+      },
+      margin: { b: 150 },
+      showlegend: false,
       marker: {
-        color: colores  // te explico abajo
+        color: colores 
       }
     }], {
       title: {
-        text: `${indicador_deseado} - ${unidad_deseada}`,
+        text: `<span style="font-size:18px; margin:25px;">${nombre_formateado}</span><br> ${unidad_deseada}`,
         font: {
           size: 24,
           color: "black"
@@ -595,7 +694,7 @@
         medio_: row['MEDIO'],
         bajo_: row['BAJO']
       }));
-    console.log(datos);
+    // console.log(datos);
     console.log("Termina de preparar los datos. Comienza a graficar.");
     datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
@@ -670,7 +769,8 @@
       type: "bar",
       marker: {
         color: color_deseado
-      }
+      },
+      showlegend: false
     }], {
       title: {
         text: `Indicadores con desempeño ${desempeño}`,
@@ -725,8 +825,8 @@
 
   document.getElementById("indicadores_1").on('plotly_click', function(data4) {
     var punto = data4.points[0];
-    indicador_deseado = punto.label;
-    console.log(desempeño);
+    indicador_deseado = punto.x;
+    console.log('click en:',punto);
     // Actualizando Graficas
     actualizarGrafica4(datos, unidad_deseada, indicador_deseado);
   });
