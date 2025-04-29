@@ -59,6 +59,15 @@
       margin-bottom: 20px;
       margin-left: auto;
       margin-right: auto;
+      width: 100%;
+      align-items: center;
+    }
+    .contenedor_2 {
+      display: flex;
+      gap: 20px; /* Espacio entre gráficos */
+      margin-bottom: 20px;
+      /*margin-left: auto;*/
+      margin-right: auto;
       width: 50%;
       align-items: center;
     }
@@ -79,14 +88,53 @@
 </head>
 <body>
   <h2><center>INDICADORES – OOAD OAXACA</center></h2>
+
   <div class="contenedor">
     <div id="mapa" class="grafica"></div>
     <div id="desempeños" class="grafica"></div>
   </div>
+
   <div class="contenedor">
     <div id="indicadores_1" class="grafica"></div>
   </div>
-  <div id='texto_1' class="contenedor"> Análisis </div>
+
+  <div id="analisis_1" hidden>
+    <div class="contenedor">
+      <b style="font-family: 'Noto Sans'; font-size: 32px;">Análisis</b>
+    </div>
+
+    <div class="contenedor">
+      <table id="tabla" style="font-family: 'Noto Sans'; font-size: 16px; border-collapse: collapse; width: 100%;">
+          <thead>
+            <tr style="background-color: 'rgba(0,0,0,0)';">
+              <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">Indicadores cercanos a desempeño Medio.</th>
+              <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">Indicadores más bajos.</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo_tabla">
+          </tbody>
+        </table>
+    </div>
+
+    <div class="contenedor">
+      <div class="contenedor_2">
+        <table id="tabla_1" style="font-family: 'Noto Sans'; font-size: 20px; border-collapse: collapse; width: 100%;">
+          <thead>
+            <tr style="background-color: #f0f0f0;">
+              <th style="padding: 8px; border: 1px none #ccc;">Indicador</th>
+              <th style="padding: 8px; border: 1px none #ccc;">Valor</th>
+              <th style="padding: 8px; border: 1px none #ccc;">Error</th>
+              <th style="padding: 8px; border: 1px none #ccc;">Rango</th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo_tabla_1">
+            <!-- Las filas se llenarán desde JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      <!--- --->
+    </div>
+  </div>
   <div class="contenedor">
     <div id="indicadores_2" class="grafica"></div>    
   </div>
@@ -359,6 +407,8 @@
   }
 
   function actualizarGrafica3(datosFiltrados, desempeño){
+    document.getElementById('analisis_1').hidden = false;
+
     if (desempeño == labels[0]) {
       color_deseado = 'green';
     } else if (desempeño == labels[1]) {
@@ -370,45 +420,53 @@
     }
 
     const datosFiltrados2 = filtrarDesempeño(datosFiltrados, color_deseado);
-    // 1. Calcular diferencia absoluta valor - esperado
-      let esperado;
+    // Calcular errores y armar nuevo array
     const datosConError = datosFiltrados2.map(row => {
+      let esperado, esperado_, desempeño_2;
       if (desempeño == 'Bajo') {
-        esperado = (row['medio'] != null) ? row['medio'] : row['esperado'];
+        esperado = row['medio'] ?? row['esperado'];
+        esperado_ = row['medio_'] ?? row['esperado_'];
+        desempeño_2 = row['medio'] ? labels[2] : labels[0];
       } else if (desempeño == 'Medio'){
         esperado = row['esperado'];
+        esperado_ = row['esperado_'];
+        desempeño_2 = labels[0];
       } else if (desempeño == 'Esperado'){
-        esperado = (row['medio'] != null) ? row['medio'] : row['bajo'];
+        esperado = row['medio'] ?? row['bajo'];
+        esperado_ = row['medio_'] ?? row['bajo_'];
+        desempeño_2 = row['medio'] ? labels[2] : labels[1];
       }
-      let error;
 
+      let error;
       if (Array.isArray(esperado)) {
-        errorMin = Math.abs(row['valor'] - parseFloat(esperado[0]));
-        errorMax = Math.abs(row['valor'] - parseFloat(esperado[1]));
-        error = Math.min(errorMin, errorMax);
+        let err1 = row['valor'] - parseFloat(esperado[0]);
+        let err2 = row['valor'] - parseFloat(esperado[1]);
+        error = Math.abs(err1) < Math.abs(err2) ? err1 : err2;  // con signo
       } else {
-        error = Math.abs(row['valor'] - parseFloat(esperado));
+        error = row['valor'] - parseFloat(esperado); // con signo
       }
 
       return {
         indicador: row['indicador'],
         error: error,
         valor: row['valor'],
-        limite: esperado,
+        limite: esperado_
       };
     });
 
-    // 2. Ordenar por error de menor a mayor
-    datosConError.sort((a, b) => a.error - b.error);
+    // Ordenar por valor absoluto del error de menor a mayor
+    datosConError.sort((a, b) => Math.abs(a.error) - Math.abs(b.error));
     console.log(datosConError);
     /*
     */
     // Crear arrays para la gráfica
     const indicadores = datosConError.map(row => row.indicador);
     const valores = datosConError.map(row => row.valor);
+    const errores = datosConError.map(row => row.error);
+    const limites = datosConError.map(row => row.limite);
     const textos = valores.map(String);
     // console.log(valores, textos);
-    console.log(datosFiltrados2);
+    // console.log(datosFiltrados2);
     Plotly.react("indicadores_1", 
       [{
         type: "bar",
@@ -419,13 +477,8 @@
         cliponaxis: false,
         texttemplate: '%{y:.1f}',
         textangle: -90,
-        textfont: {
-          size: 18, 
-          family: 'Noto Sans'
-        },
-        marker: {
-          color: color_deseado 
-        },
+        textfont: { size: 18, family: 'Noto Sans' },
+        marker: { color: color_deseado },
         hovertemplate: '<b>%{label}</b><br>%{value:.2f}<extra></extra>',
         hoverlabel: {
           bgcolor: color_deseado,
@@ -436,10 +489,7 @@
       }], {
         title: {
           text: `Indicadores con desempeño ${desempeño}, ${mes_deseado} ${año_deseado}`,
-          font: {
-            size: 24,
-            color: "black"
-          },
+          font: { size: 24, color: "black" },
           x: 0.5
         },
         //xaxis: { title: "Indicador" },
@@ -459,7 +509,20 @@
         }
       }
     );
-    document.getElementById('texto_1').innerHTML = (`Hola ${indicadores.slice(0,5)} - \n`);
+
+    const cuerpoTabla_1 = document.getElementById("cuerpo_tabla_1");
+    cuerpoTabla_1.innerHTML = "";
+    for (i = 0; i < 5; i++){
+      const fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td style="padding: 8px; border: 1px solid #ccc;">${indicadores[i]}</td>
+        <td style="padding: 8px; border: 1px solid #ccc;">${valores[i].toFixed(2)}</td>
+        <td style="padding: 8px; border: 1px solid #ccc;">${errores[i].toFixed(2)}</td>
+        <td style="padding: 8px; border: 1px solid #ccc;">${limites[i]}</td>
+      `;
+      cuerpoTabla_1.appendChild(fila);
+      //document.getElementById('texto_1').innerHTML += (`<br>${} &ensp; Le falta ${} para llegar al nivel ${desempeño_2}.`);      
+    }
     return indicadores;
   }
 
@@ -527,7 +590,10 @@
         color: calcularColor(row["VALOR"], row["ESPERADO"], row["MEDIO"], row["BAJO"]),
         esperado: obtenerRangoNumero(row['ESPERADO']),
         medio: obtenerRangoNumero(row['MEDIO']),
-        bajo: obtenerRangoNumero(row['BAJO'])
+        bajo: obtenerRangoNumero(row['BAJO']),
+        esperado_: row['ESPERADO'],
+        medio_: row['MEDIO'],
+        bajo_: row['BAJO']
       }));
     console.log(datos);
     console.log("Termina de preparar los datos. Comienza a graficar.");
