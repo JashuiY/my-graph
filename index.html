@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Desde Google Sheets</title>
+  <title>INDICADORES</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
@@ -71,6 +71,17 @@
       width: 50%;
       align-items: center;
     }
+    .botones{
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      justify-content: center;
+      gap: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 40px;
+      margin-top: 0px;
+    }
     .grafica {
       flex: 1;
       height: 500px;
@@ -86,19 +97,96 @@
     #indicadores_1 {
       height: 700px;
     }
-    /*style="width: 50%; max-width: 900px; height: 500px;"*/
+    #indicadores_2 {
+      height: 650px;
+    }
+    button{
+      min-width: 120px;
+      width: 15%;/*130px;*/
+      height: 50px;
+      padding: 10px 5px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      background-color: #F0F0F0;/*#FF9800;*/
+      color: black;
+      box-shadow: 0 5px 0 #149985, 0 8px 10px rgba(0, 0, 0, 0.2); /*F57C00 - D0F2E1*/
+      position: relative;
+      top: 0;
+      transition: all 0.1s;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      line-height: 1.1;
+    }
+    button:hover{
+      background-color: #149985;/*#FB8C00;*/
+      color: white;
+      transform: translateY(-3px);
+    }
+    button:active{
+      top: 3px;
+    }
+    button.activo {
+      background-color: #149985 !important;
+      color: white;
+      transform: translateY(3px);
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.2);
+    }
+    #loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      display: none;
+    }
+
+    .loader {
+      border: 10px solid #f3f3f3;
+      border-top: 10px solid #006657;/*#FF9800;*/
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
-  <h2><center>INDICADORES – OOAD OAXACA</center></h2>
+  <div id="loader-overlay">
+    <div class="loader"></div>
+  </div>
+  <div class="contenedor">
+    <div class="botones" id="botones1" style="width: 100%; margin-bottom: 83px;"></div>
+    <div class="botones" id="botones2" style="width: 13%;"></div>
+  </div>
 
   <div class="contenedor">
+    <!---
     <div id="mapa" class="grafica"></div>
+    --->
     <div id="desempeños" class="grafica"></div>
   </div>
 
   <div class="contenedor">
     <div id="indicadores_1" class="grafica"></div>
+  </div>
+
+  <div class="contenedor">
+    <div id="indicadores_2" class="grafica"></div>    
   </div>
 
   <div id="analisis_1" hidden>
@@ -121,18 +209,20 @@
 
     <div class="contenedor">
       <div class="contenedor_2">
-        <table id="tabla_1" style="font-family: 'Noto Sans'; font-size: 14px; border-collapse: collapse; width: 100%;">
+        <table id="tabla_1" style="font-family: 'Noto Sans'; font-size: 14px; border-collapse: collapse; width: 80%;">
           <thead>
             <tr style="background-color: #f0f0f0;">
-              <th style="padding: 8px; border: 1px none #ccc;" rowspan="2">Indicador</th>
-              <th style="padding: 8px; border: 1px none #ccc;" rowspan="2">Valor</th>
-              <th style="padding: 8px; border: 1px none #ccc;" rowspan="2">Error</th>
-              <th style="padding: 8px; border: 1px none #ccc;" colspan="2">Semaforización</th>
+              <th style="padding: 8px; border: 1px none #ccc;" rowspan="1"; >Indicador</th>
+              <th style="padding: 8px; border: 1px none #ccc;" rowspan="1"; >Valor</th>
+              <th style="padding: 8px; border: 1px none #ccc;" rowspan="1"; >Error</th>
+              <th style="padding: 8px; border: 1px none #ccc;" colspan="1"; >Semaforización</th>
             </tr>
+            <!---
             <tr style="background-color: #f0f0f0;">
               <th style="padding: 8px; border: 1px none #ccc;">Actual</th>
               <th style="padding: 8px; border: 1px none #ccc;">Posible</th>
             </tr>
+            --->
           </thead>
           <tbody id="cuerpo_tabla_1">
             <!-- Las filas se llenarán desde JavaScript -->
@@ -141,9 +231,6 @@
       </div>
       <!--- --->
     </div>
-  </div>
-  <div class="contenedor">
-    <div id="indicadores_2" class="grafica"></div>    
   </div>
 
   <script>
@@ -299,79 +386,6 @@
     return conteo;
   }
 
-  function actualizarGrafica1(punto){
-    var latitud_seleccionada = punto.lat;
-    var longitud_seleccionada = punto.lon;
-    
-    Plotly.react('mapa', 
-      [{
-        type: 'scattergeo',
-        mode: 'markers',
-        lat: latitudes,  // latitudes
-        lon: longitudes, // longitudes
-        text: nombres,
-        marker: {
-          size: [
-            '15','15','15','15','15','20','15','15','20','15','20','15','15','15','15','15','15','15','15','15','15','15','15','15','15','15','20','20'],// [20, 30]
-          color: [
-            'green','green','green','green','green','coral','green','green','coral','green','coral','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','coral','coral']//['green', 'red']
-        },
-        showlegend: false
-      }],
-      {
-        title: {
-          text: `${unidad_deseada}`,
-          font: {
-            size: 24,
-            color: "black"
-          },
-          //xref: 'paper',
-          x: 0.5, // Centrado
-          xanchor: 'center'
-        },
-        geo: {
-          scope: "north america",  // o usa 'north america' si quieres limitar
-          projection: { type: "mercator" },
-          center: { lat: latitud_seleccionada, lon: longitud_seleccionada },
-          resolution: 60,
-          lonaxis: { range: [-100, -94] },  // ajusta el área visible si quieres
-          lataxis: { range: [16.3, 19.5] },
-          showland: true,
-          landcolor: "rgb(243, 243, 243)",
-          countrycolor: "rgb(204, 204, 204)",
-          projection: { scale: 1 }
-        },
-        //margin: { t: 50, b: 0, l: 0, r: 0 }
-      }
-    ); // mapa
-    
-    // Eliminar highlight anterior si existe
-    if (document.getElementById('mapa').data.length > 1) {
-      Plotly.deleteTraces('mapa', 1);
-    }
-
-    // Crear nuevo punto resaltado
-    Plotly.addTraces('mapa', {
-      type: 'scattergeo',
-      mode: 'markers',
-      lat: [latitud_seleccionada],
-      lon: [longitud_seleccionada],
-      marker: {
-        size: 30,
-        color: 'yellow',
-        opacity: 0.5,
-        line: {
-          width: 4,
-          color: 'gold'
-        }
-      },
-      hoverinfo: 'skip',  // Opcional, para que no muestre tooltip
-      showlegend: false
-    }).then((res) => {
-      console.log('Resaltando punto');
-    });
-  }
-
   function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
@@ -504,8 +518,8 @@
     });
 
     // Ordenar por valor absoluto del error de menor a mayor
-    datosConError.sort((a, b) => Math.abs(a.error) - Math.abs(b.error));
-    // console.log(datosConError);
+    const datosConError2 = datosConError.sort((a, b) => Math.abs(a.error) - Math.abs(b.error));
+    console.log(datosConError, datosConError2);
     /*
     */
     // Crear arrays para la gráfica
@@ -531,9 +545,9 @@
           text: textos,
           textposition: 'outside',
           cliponaxis: false,
-          texttemplate: ' ',//'%{y:.1f}',
-          //textangle: -90,
-          //textfont: { size: 18, family: 'Noto Sans' },
+          texttemplate: '<b>%{y:.1f}</b>',
+          textangle: -45,
+          textfont: { size: 18, family: 'Noto Sans' },
           marker: { color: color_deseado },
           hovertemplate: '<b>%{label}</b><br>%{text}<extra></extra>',
           hoverlabel: {
@@ -559,7 +573,7 @@
           },
           marker: {
             color: colores_,
-            symbol: "cross-thin"
+            symbol: 'circle' //"cross-thin"
             //size: 15
           },
           //hovertemplate: "<b>%{x}</b><br>Esperado: %{y}<extra></extra>"
@@ -597,11 +611,12 @@
       const fila = document.createElement("tr");
       fila.innerHTML = `
         <td style="padding: 4px; border: 1px solid #ccc;">${indicadores[i]}</td>
-        <td style="padding: 4px; border: 1px solid #ccc;">${valores[i].toFixed(2)}</td>
-        <td style="padding: 4px; border: 1px solid #ccc;">${errores[i].toFixed(2)}</td>
-        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${color_deseado}">■</td>
-        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${colores_[i]}">■</td>
+        <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${valores[i].toFixed(2)}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${errores[i].toFixed(2)}</td>
+        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center;"><span style="color: ${color_deseado};">■</span><span style="font-size:25px;">➔</span><span style="color: ${colores_[i]};">■</span></td>
+        
       `;
+      // <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${colores_[i]};">■</td>
       cuerpoTabla_1.appendChild(fila);
       //document.getElementById('texto_1').innerHTML += (`<br>${} &ensp; Le falta ${} para llegar al nivel ${desempeño_2}.`);      
     }
@@ -617,16 +632,17 @@
     const colores = datosFiltrados3.map(row => row['color']);
     const textos = datosFiltrados3.map(row => row['valor'].toFixed(2));
     const nombres_indicadores = datosFiltrados3.map(row => row['nombre_indicador']);
-    console.log(datosFiltrados3);
+    // console.log(textos);
     const nombre_indicador = nombres_indicadores[0];
-    const nombre_formateado = insertarSaltosLinea(nombre_indicador, 100);
+    const nombre_formateado = insertarSaltosLinea(nombre_indicador, 80);
     Plotly.react("indicadores_2", [{
+      type: "bar",
       x: fechas,
       y: valores,
       text: textos,
-      type: "bar",
-      texttemplate: '%{y:.1f}',
-      textangle: -90,
+      textposition: 'auto',
+      texttemplate: '<b>%{y:.2f}<b>',
+      //textangle: -90,
       textfont: { size: 18, family: 'Noto Sans' },
       marker: { color: colores },
       hovertemplate: '<b>%{label}</b><br>%{value}<extra></extra>',
@@ -635,22 +651,24 @@
         //bordercolor: '#000000',
         font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
       },
-      margin: { b: 150 },
       showlegend: false,
       marker: {
         color: colores 
       }
     }], {
       title: {
-        text: `<span style="font-size:18px; margin:25px;">${nombre_formateado}</span><br> ${unidad_deseada}`,
+        text: `<b><span style="font-size:18px; margin:25px;">${nombre_formateado}</span><br>${indicador_deseado} - ${unidad_deseada}</b><br>`,
         font: {
-          size: 24,
-          color: "black"
+          size: 20,
+          color: "black",
         },
         x: 0.5
       },
-      xaxis: { title: "Fechas" },
-      yaxis: { title: "Valor" }
+      //xaxis: { title: "Fechas" },
+      yaxis: { title: "Valor" },     
+      margin: { b: 100, t:120 }, 
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: '#f9f9f9'
     });
   }
 
@@ -659,11 +677,17 @@
                17.0782,17.0701,17.0672,16.8664,17.2101,17.2411,17.2818,17.7983,15.8635,18.1312,16.3395,17.6718,17.0723,17.0720];
   longitudes = [-94.1915,-94.7655,-95.0146,-95.0882,-95.0962,-95.2019,-95.2329,-95.8807,-96.1296,-96.1378,-96.1379,-96.4722,-96.4871,-96.6764,
                 -96.7043,-96.7220,-96.7358,-96.7863,-96.7980,-96.8207,-96.8925,-96.9602,-97.0703,-97.0765,-98.0453,-97.5652,-96.7212,-96.7207];
-  nombres = ['UMF 30 San Pedro Tapanatepec','UMF 12 Sto. Domingo Ingenio','UMF 06 Juchitán','UMF 23 Cd. Ixtepec','UMF 29 Barrio La Soledad',
+  /*unidades = ['UMF 30 San Pedro Tapanatepec','UMF 12 Sto. Domingo Ingenio','UMF 06 Juchitán','UMF 23 Cd. Ixtepec','UMF 29 Barrio La Soledad',
              'HGZMF 02 Salina Cruz','UMF 05 Sto.Dgo.Tehuantepec','UMF 59 Loma Bonita','HGSMF 41 Huatulco','UMF 64 Tuxtepec','HGZ 03 Tuxtepec',
              'UMF 33 Pedro Pochutla','UMF 40 Ixtlan de Juárez','UMF 27 Ocotlán','UMF 65 Sta Lucia del Camino','UMF 01 Oaxaca','UMF 38 FFCC.',
              'UMF 31 Zimatlán de Álvarez','UMF 57 San Pablo Villa de Etla','UMF 17 Magdalena Apasco','UMF 56 San Pablo Huitzo','UMF 13 Cuicatlán',
-             'UMF 32 Puerto Escondido','UMF 58 Teotitlán','UMF 26 Pinotepa','UMRM 21 Tamazulapan','HGZ 01 Oaxaca','UMAA Oaxaca'];
+             'UMF 32 Puerto Escondido','UMF 58 Teotitlán','UMF 26 Pinotepa','UMRM 21 Tamazulapan','HGZ 01 Oaxaca','UMAA Oaxaca'];*/
+
+  unidades1 = ['UMF 01 Oaxaca','UMF 38 FFCC.','UMF 65 Sta Lucia del Camino','UMF 64 Tuxtepec','UMF 13 Cuicatlán','UMF 05 Sto.Dgo.Tehuantepec',
+              'UMF 06 Juchitán','UMF 17 Magdalena Apasco','UMF 12 Sto. Domingo Ingenio','UMF 23 Cd. Ixtepec','UMF 27 Ocotlán','UMF 31 Zimatlán de Álvarez',
+              'UMF 30 San Pedro Tapanatepec','UMF 40 Ixtlan de Juárez','UMF 32 Puerto Escondido','UMF 33 Pedro Pochutla','UMF 29 Barrio La Soledad',
+              'UMF 26 Pinotepa','UMF 58 Teotitlán','UMF 57 San Pablo Villa de Etla','UMF 56 San Pablo Huitzo','UMF 59 Loma Bonita','UMRM 21 Tamazulapan','UMAA Oaxaca'];
+  unidades2 = ['HGZ 01 Oaxaca','HGZMF 02 Salina Cruz','HGZ 03 Tuxtepec','HGSMF 41 Huatulco','Oaxaca']
 
   mes_deseado = 'ENERO';
   año_deseado = '2025';
@@ -699,91 +723,130 @@
     datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
+    document.getElementById('loader-overlay').style.display = 'none';
   });
 
-  Plotly.newPlot('mapa', 
-    [{
-      type: 'scattergeo',
-      mode: 'markers',
-      lat: latitudes,  // latitudes
-      lon: longitudes, // longitudes
-      text: nombres,
-      marker: {
-        size: [
-          '15','15','15','15','15','20','15','15','20','15','20','15','15','15','15','15','15','15','15','15','15','15','15','15','15','15','20','20'],// [20, 30]
-        color: [
-          'green','green','green','green','green','coral','green','green','coral','green','coral','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','coral','coral']//['green', 'red']
-      },
-      showlegend: false
-    }],
-    {
-      title: {
-        text: 'Ubicación de Unidades de OOAD OAXACA',
-        font: {
-          size: 24,
-          color: "black"
-        },
-        //xref: 'paper',
-        x: 0.5, // Centrado
-        xanchor: 'center'
-      },
-      geo: {
-        scope: "north america",  // o usa 'north america' si quieres limitar
-        projection: { type: "mercator" },
-        center: { lat: 17.2, lon: -96.2 },
-        resolution: 150,
-        lonaxis: { range: [-100, -94] },  // ajusta el área visible si quieres
-        lataxis: { range: [16.3, 19.5] },
-        showland: true,
-        landcolor: "rgb(243, 243, 243)",
-        countrycolor: "rgb(204, 204, 204)",
-        projection: { scale: 1 }
-      },
-      //margin: { t: 50, b: 0, l: 0, r: 0 }
-    }
-  ); // mapa
-
   Plotly.newPlot("desempeños", 
-  [{
-    values: [1, 0, 0, 0],
-    labels: labels,
-    type: "pie",
-    marker: { colors: ["green", "red", "orange", "lightgray"] },
-    textinfo: "label+percent",
-    insidetextorientation: "radial"
-  }], {
-    title: {
-      text: `Indicadores por Desempeño`,
-      x: 0.5
-    },
-    animations: {
-      enabled: true,
-      easing: 'elastic-in-out'
-    }
-  }); // desempeños
+    [{
+        type: "pie",
+        values: [1, 0, 0, 0],
+        labels: labels,
+        marker: {
+          colors: ["green", "red", "orange", "lightgray"]
+        },
+        textinfo: "label+percent",
+        insidetextorientation: "radial",
+        hole: 0.3,
+        textfont: {
+          size: 18
+        },
+        hoverinfo: 'none',//'label+percent+value',
+        hovertemplate: '', //'<b>%{label}</b><br>%{percent:.1%}<br>Valor: %{value}<extra></extra>',
+      }], 
+      {
+        title: {
+          text: `Oaxaca`,
+          font: {
+            size: 24,
+            color: "black"
+          },
+          x: 0.5,
+        },
+        annotations: [{  // Texto en el centro
+          text: `<b>No.<br>indicadores:<br><br><span style="font-size:30px; margin:25px;">${n_indicadores}</span><b>`,
+          font: { family: 'Noto Sans', size: 14, color: '#333' },
+          showarrow: false,
+          x: 0.5,  // Posición X (0-1)
+          y: 0.5,  // Posición Y (0-1)
+          xanchor: 'center',
+          yanchor: 'middle',
+          align: 'center'
+        }],
+        showlegend: false,
+        hoverlabel: {
+          shadow: {
+            color: 'rgba(0,0,0,0.5)',
+            x: 3,
+            y: 3,
+            blur: 10
+          }
+        },
+        plot_bgcolor: 'rgba(0,0,0,0)', // Fondo transparente
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        margin: { t: 40, b: 40, l: 30, r: 30 }, // Márgenes ajustados
+        font: {
+          family: 'Noto Sans',
+          color: '#333333'
+        },
+        hovermode: 'closest',
+        animations: {
+          enabled: true,
+          easing: 'elastic-in-out'
+        }
+      }
+  ); // desempeños
 
   Plotly.newPlot("indicadores_1", 
     [{
-      x: [1, 0, 0, 0],
-      y: ['01', '02', '03', '04'],
       type: "bar",
-      marker: {
-        color: color_deseado
+      x: ['01', '02', '03', '04'],
+      y: [1, 0.75, 0.5, 0.25],
+      cliponaxis: false,
+      texttemplate: ' ',
+      marker: { color: color_deseado },
+      hoverlabel: {
+        bgcolor: color_deseado,
+        font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
       },
+      margin: { b: 150 },
       showlegend: false
-    }], {
+    },
+    // Línea de pasos (valores esperados)
+    {
+      type: "scatter",
+      mode: "lines+markers",
+      x: ['01', '02', '03', '04'],
+      y: [1, 0, 0, 0],
+      name: "Valor esperado",
+      line: {
+        shape: "hvh",  // step graph: horizontal-vertical
+        color: 'black',
+        width: 2,
+        dash: 'dot' // (dot, dash)
+      },
+      marker: {
+        color: 'orange',
+        symbol: "cross-thin"
+      },
+      hovertemplate: "",
+      showlegend: false
+    }], 
+    {
       title: {
-        text: `Indicadores con desempeño ${desempeño}`,
+        text: `Indicadores con desempeño ${desempeño}, ${mes_deseado} ${año_deseado}`,
+        font: { size: 24, color: "black" },
         x: 0.5
       },
-      xaxis: { title: "Indicador" },
-      yaxis: { title: "Valor" }
-    }); // indicadores_1
+      yaxis: { title: "Valor" },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: '#f9f9f9',
+      shadow: {
+        enabled: true,
+        color: 'rgba(0,0,0,0.2)',
+        x: 3,
+        y: 3,
+        blur: 10
+      },
+      uniformtext: {
+        minsize: 14   // Tamaño mínimo de fuente
+      }
+    }
+  ); // indicadores_1
 
   Plotly.newPlot("indicadores_2", 
     [{
-      x: [1, 0, 0, 0],
-      y: ['Enero', 'Febrero', 'Marzo', 'Abril'],
+      y: [1, 0, 0, 0],
+      x: ['Enero', 'Febrero', 'Marzo', 'Abril'],
       type: "bar",
       marker: {
         color: color_deseado 
@@ -793,25 +856,59 @@
         text: `${indicador_deseado} - ${unidad_deseada}`,
         x: 0.5
       },
-      //xaxis: { title: "Fechas" },
-      yaxis: { title: "Valor" }
+      yaxis: { title: "Valor" },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: '#f9f9f9'
     }); // indicadores_2
 
   console.log('Terminó una gráfica, empezando a comunicarse.');
+  document.getElementById('loader-overlay').style.display = 'flex';
 
-  document.getElementById("mapa").on('plotly_click', function(data2) {
-    var punto = data2.points[0];
-    unidad_deseada = punto.text;
-    console.log("Clic en:", unidad_deseada, punto);
-    n_indicadores = "--";
+  // ---------- 8 -------------
+  
+  const contenedor1 = document.getElementById("botones1");
+  unidades1.forEach(unidad => {
+    const btn = document.createElement("button");
+    btn.textContent = unidad;
 
-    // Actualizando Graficas
-    actualizarGrafica1(punto);
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
-    indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
-    actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
+    // Evento click
+    btn.addEventListener("click", () => {
+      console.log(unidad);
+      // Remover la clase activa de todos los botones
+      document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
+        document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
+        btn.classList.add("activo");  // asignar estilo activo solo a uno.        
+      });
+
+      unidad_deseada = unidad;
+      datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+      indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+      actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
+    });    
+    contenedor1.appendChild(btn);
   });
 
+  const contenedor2 = document.getElementById("botones2");
+  unidades2.forEach(unidad => {
+    const btn = document.createElement("button");
+    btn.textContent = unidad;
+
+    btn.addEventListener("click", () => {
+      console.log(unidad);
+      // Remover la clase activa de todos los botones
+      document.querySelectorAll("#botones1 button", "#botones2 button").forEach(b => {
+        document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
+        btn.classList.add("activo");  // asignar estilo activo solo a uno.
+      });
+
+      unidad_deseada = unidad;
+      datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+      indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+      actualizarGrafica4(datos, unidad_deseada, indicadores_d[0]);
+    });    
+    contenedor2.appendChild(btn);
+  });
+    
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
     desempeño = punto.label;
