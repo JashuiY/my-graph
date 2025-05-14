@@ -7,6 +7,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
+    :root{
+      --ancho: 100%;
+    }
     header {
       position: fixed;
       top: 0;
@@ -29,7 +32,7 @@
       margin-bottom: 20px;
       margin-left: auto;
       margin-right: auto;
-      width: 100%;
+      width: var(--ancho);
       align-items: center;
     }
     .contenedor_2 {
@@ -39,6 +42,15 @@
       /*margin-left: auto;*/
       margin-right: auto;
       width: 50%;
+      align-items: center;
+    }
+    .contenedor_3 {
+      display: flex;
+      gap: 20px; /* Espacio entre gráficos */
+      margin-bottom: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      width: var(--ancho);
       align-items: center;
     }
     .grafica {
@@ -88,9 +100,9 @@
     }
 
     .btn-unidad{
-      min-width: 120px;
-      width: 15%;/*130px;*/
-      height: 60px;
+      min-width: 50px;
+      width: 20%;/*130px;*/
+      height: 40px;
       padding: 10px 5px;
       border: none;
       border-radius: 6px;
@@ -162,7 +174,7 @@
       border: 1px solid rgba(0,0,0,0.05);
       overflow: hidden;
       width: 90%;
-      height: 90%;
+      height: 70%;
       margin-left: auto;
       margin-right: auto;
       margin-bottom: 0px;
@@ -172,8 +184,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid rgba(0,0,0,0.05);
     }
     .año-actual {
@@ -202,18 +214,18 @@
     }
     .month-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .month-btn {
-      padding: 12px 8px;
+      padding: 8px 8px;
       border: none;
       background: rgba(0,0,0,0.03);
       border-radius: 10px;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 500;
       color: #10312B;/*444*/
       position: relative;
@@ -242,17 +254,21 @@
       background: white;
       border-radius: 3px 3px 0 0;
     }
+    .month-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
     .selected-display {
       background: rgba(0, 178, 152,0.25);/*rgba(208, 184, 166, 0.1);rgba(76, 175, 80, 0.08)*/
-      padding: 14px;
+      padding: 15px;
       border-radius: 12px;
       text-align: center;
-      font-size: 16px;
+      font-size: 24px;
       color: #006657;/*2E7D32*/
-      margin-top: 10px;
+      margin-top: 5px;
       display: flex;
       justify-content: center;
-      gap: 5px;
+      gap: 10px;
     }
     #selected-month {
       font-weight: 600;
@@ -268,7 +284,7 @@
       gap: 5px;                      /* Espacio entre celdas */
       margin-left: auto;
       margin-right: auto;
-      width: 100%;
+      width: var(--ancho);
       align-items: center;
       /*height: 400px;  */
       border-bottom: 5px solid rgba(0, 102, 87,1);/*rgba(16, 49, 52, 1);*/
@@ -309,7 +325,12 @@
   </style>
 </head>
 <header>
-  <div class="contenedor"> 
+  <div class="contenedor_3"> 
+    <div class="selected-display">
+      <span id="selected-month">Septiembre</span>
+      <span id="selected-year">2023</span>
+      <span id="selected-unit">Oaxaca</span>
+    </div>
   </div>
   
 </header>
@@ -317,7 +338,7 @@
   <div id="loader-overlay">
     <div class="loader"></div>
   </div>
-  <div style="height: 130px;"></div>
+  <div style="height: 100px;"></div>
   <div class="contenedor-grid">
     <div class="calendario"> <!--- calendar-picker --->
       <div class="calendario-encabezado"> <!--- calendar-header --->
@@ -343,10 +364,10 @@
         <button class="month-btn" data-month="11">Nov</button>
         <button class="month-btn" data-month="12">Dic</button>
       </div>
-      <div class="selected-display">
+      <!---<div class="selected-display">
         <span id="selected-month">Septiembre</span>
         <span id="selected-year">2023</span>
-      </div>
+      </div>--->
     </div>
 
       <div class="botones" id="botones2"></div>
@@ -355,6 +376,36 @@
   </div>
 
   <div class="contenedor">
+    <!---<div class="calendario"> 
+      <div class="calendario-encabezado"> 
+        <button class="nav-btn previo"> 
+          <i class="fa-solid fa-square-caret-left" style="font-size: 20px;"></i>
+        </button>
+        <span class="año-actual">2023</span>
+        <button class="nav-btn siguiente">
+          <i class="fa-solid fa-square-caret-right" style="font-size: 20px;"></i>
+        </button>
+      </div>
+      <div class="month-grid">
+        <button class="month-btn" data-month="1">Ene</button>
+        <button class="month-btn" data-month="2">Feb</button>
+        <button class="month-btn" data-month="3">Mar</button>
+        <button class="month-btn" data-month="4">Abr</button>
+        <button class="month-btn" data-month="5">May</button>
+        <button class="month-btn" data-month="6">Jun</button>
+        <button class="month-btn" data-month="7">Jul</button>
+        <button class="month-btn" data-month="8">Ago</button>
+        <button class="month-btn" data-month="9">Sep</button>
+        <button class="month-btn" data-month="10">Oct</button>
+        <button class="month-btn" data-month="11">Nov</button>
+        <button class="month-btn" data-month="12">Dic</button>
+      </div>
+      <div class="selected-display">
+        <span id="selected-month">Septiembre</span>
+        <span id="selected-year">2023</span>
+      </div>
+    </div>--->
+
     <div id="desempeños" class="grafica"></div>
   </div>
 
@@ -394,7 +445,12 @@
               <th style="padding: 8px; border: 1px none #ccc;" rowspan="1"; >Error</th>
               <th style="padding: 8px; border: 1px none #ccc;" colspan="1"; >Semaforización</th>
             </tr>
-           
+            <!---
+            <tr style="background-color: #f0f0f0;">
+              <th style="padding: 8px; border: 1px none #ccc;">Actual</th>
+              <th style="padding: 8px; border: 1px none #ccc;">Posible</th>
+            </tr>
+            --->
           </thead>
           <tbody id="cuerpo_tabla_1">
             <!-- Las filas se llenarán desde JavaScript -->
@@ -455,7 +511,7 @@
         error = (Math.abs(errorMedio) <= Math.abs(errorBajo)) ? errorMedio : errorBajo;
         errorColor = (Math.abs(errorMedio) < Math.abs(errorBajo)) ? 'orange' : 'red';
       }
-      // console.log(error, errorColor, '-------');
+      // console.log(error, errorColor, '-------', indicador);
       valor_esperado = valor - error;
       return {
         indicador: indicador,
@@ -466,6 +522,7 @@
         fecha: fecha
       };
     });
+    //console.log(datosConError);
     return datosConError;
   }
 
@@ -603,7 +660,7 @@
 
     return conteo;
   }
-    
+
   function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
@@ -700,12 +757,13 @@
     }
 
     const datosFiltrados2 = filtrarDesempeño(datosFiltrados, color_deseado);
-    //console.log('DATOS FILTRADOS 2: ',datosFiltrados2);
+    // console.log('DATOS FILTRADOS 2: ',datosFiltrados2);
     // Calcular errores y armar nuevo array
     const datosConError = filtrarErrores(datosFiltrados2);
+    const datosConError2 = datosConError.slice();
 
     // Ordenar por valor absoluto del error de menor a mayor
-    const datosConError2 = datosConError.sort((a, b) => Math.abs(a.error) - Math.abs(b.error));
+    datosConError2.sort((a, b) => Math.abs(a.error) - Math.abs(b.error));
     //console.log(datosConError, datosConError2);
     /*
     */
@@ -717,7 +775,7 @@
     const colores_ = datosConError.map(row => row.colorError);
     const textos = valores.map((valor, i) => {
       const error_ = errores[i];
-      const signo_ = error >= 0 ? "▲" : "▼"; // Usa el signo correcto
+      const signo_ = error_ >= 0 ? "▲" : "▼"; // Usa el signo correcto
       return `${valor.toFixed(2)} (${signo_}${Math.abs(error_).toFixed(2)})`;
     });
     // console.log(valores, textos, limites);
@@ -790,23 +848,29 @@
       }
     );
 
+    // Crear arrays para la tabla
+    const indicadores2 = datosConError2.map(row => row.indicador);
+    const valores2 = datosConError2.map(row => row.valor);
+    const errores2 = datosConError2.map(row => row.error);
+    const colores_2 = datosConError2.map(row => row.colorError);
+
     const cuerpoTabla_1 = document.getElementById("cuerpo_tabla_1");
     cuerpoTabla_1.innerHTML = "";
-    obs_indicadores = (indicadores.length < 5) ? indicadores.length : 5;
+    obs_indicadores = (indicadores2.length < 5) ? indicadores2.length : 5;
     for (i = 0; i < obs_indicadores; i++){
       const fila = document.createElement("tr");
       fila.innerHTML = `
-        <td style="padding: 4px; border: 1px solid #ccc;">${indicadores[i]}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${valores[i].toFixed(2)}</td>
-        <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${errores[i].toFixed(2)}</td>
-        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center;"><span style="color: ${color_deseado};">■</span><span style="font-size:25px;">➔</span><span style="color: ${colores_[i]};">■</span></td>
+        <td style="padding: 4px; border: 1px solid #ccc;">${indicadores2[i]}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${valores2[i].toFixed(2)}</td>
+        <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${errores2[i].toFixed(2)}</td>
+        <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center;"><span style="color: ${color_deseado};">■</span><span style="font-size:25px;">➔</span><span style="color: ${colores_2[i]};">■</span></td>
         
       `;
       // <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${colores_[i]};">■</td>
       cuerpoTabla_1.appendChild(fila);
       //document.getElementById('texto_1').innerHTML += (`<br>${} &ensp; Le falta ${} para llegar al nivel ${desempeño_2}.`);      
     }
-    return indicadores;
+    return indicadores2;
   }
 
   function actualizarGrafica4(datos, unidad_deseada, indicador_deseado, desempeño){
@@ -814,9 +878,9 @@
     console.log(unidad_deseada, indicador_deseado);
     datosConError = filtrarErrores(datosFiltrados3);
     //console.log(datosConError, datosFiltrados3);
-    console.log('DATOS FILTRADOS 3: ',datosFiltrados3);
+    // console.log('DATOS FILTRADOS 3: ',datosFiltrados3);
     // Crear arrays para la gráfica
-    const fechas = datosFiltrados3.map(row => row['fecha']);
+    fechas = datosFiltrados3.map(row => row['fecha']);
     const valores = datosFiltrados3.map(row => row['valor']);
     const colores = datosFiltrados3.map(row => row['color']);
     //const textos = datosFiltrados3.map(row => row['valor'].toFixed(2));
@@ -831,7 +895,7 @@
     const colores_ = datosConError.map(row => row.colorError);
     const textos = valores.map((valor, i) => {
       const error_ = errores[i];
-      const signo_ = error >= 0 ? "▲" : "▼"; // Usa el signo correcto
+      const signo_ = error_ >= 0 ? "▲" : "▼"; // Usa el signo correcto
       return `${valor.toFixed(2)} (${signo_}${Math.abs(error_).toFixed(2)})`;
     });
     let index_fecha = fechas.indexOf(fecha_deseada);
@@ -920,11 +984,26 @@
                17.0782,17.0701,17.0672,16.8664,17.2101,17.2411,17.2818,17.7983,15.8635,18.1312,16.3395,17.6718,17.0723,17.0720];
   longitudes = [-94.1915,-94.7655,-95.0146,-95.0882,-95.0962,-95.2019,-95.2329,-95.8807,-96.1296,-96.1378,-96.1379,-96.4722,-96.4871,-96.6764,
                 -96.7043,-96.7220,-96.7358,-96.7863,-96.7980,-96.8207,-96.8925,-96.9602,-97.0703,-97.0765,-98.0453,-97.5652,-96.7212,-96.7207];
+  /*unidades = ['UMF 30 San Pedro Tapanatepec','UMF 12 Sto. Domingo Ingenio','UMF 06 Juchitán','UMF 23 Cd. Ixtepec','UMF 29 Barrio La Soledad',
+             'HGZMF 02 Salina Cruz','UMF 05 Sto.Dgo.Tehuantepec','UMF 59 Loma Bonita','HGSMF 41 Huatulco','UMF 64 Tuxtepec','HGZ 03 Tuxtepec',
+             'UMF 33 Pedro Pochutla','UMF 40 Ixtlan de Juárez','UMF 27 Ocotlán','UMF 65 Sta Lucia del Camino','UMF 01 Oaxaca','UMF 38 FFCC.',
+             'UMF 31 Zimatlán de Álvarez','UMF 57 San Pablo Villa de Etla','UMF 17 Magdalena Apasco','UMF 56 San Pablo Huitzo','UMF 13 Cuicatlán',
+             'UMF 32 Puerto Escondido','UMF 58 Teotitlán','UMF 26 Pinotepa','UMRM 21 Tamazulapan','HGZ 01 Oaxaca','UMAA Oaxaca'];*/
+
   unidades1 = ['UMF 01 Oaxaca','UMF 38 FFCC.','UMF 65 Sta Lucia del Camino','UMF 64 Tuxtepec','UMF 13 Cuicatlán','UMF 05 Sto.Dgo.Tehuantepec',
               'UMF 06 Juchitán','UMF 17 Magdalena Apasco','UMF 12 Sto. Domingo Ingenio','UMF 23 Cd. Ixtepec','UMF 27 Ocotlán','UMF 31 Zimatlán de Álvarez',
               'UMF 30 San Pedro Tapanatepec','UMF 40 Ixtlan de Juárez','UMF 32 Puerto Escondido','UMF 33 Pedro Pochutla','UMF 29 Barrio La Soledad',
               'UMF 26 Pinotepa','UMF 58 Teotitlán','UMF 57 San Pablo Villa de Etla','UMF 56 San Pablo Huitzo','UMF 59 Loma Bonita','UMRM 21 Tamazulapan','UMAA Oaxaca'];
-  unidades2 = ['HGZ 01 Oaxaca','HGZMF 02 Salina Cruz','HGZ 03 Tuxtepec','HGSMF 41 Huatulco','Oaxaca']
+  unidades2 = ['HGZ 01 Oaxaca','HGZMF 02 Salina Cruz','HGZ 03 Tuxtepec','HGSMF 41 Huatulco','Oaxaca'];
+
+  nombres_unidades = ['UMF 01 Oaxaca','UMF 38 FFCC.','UMF 65 Sta Lucia del Camino','UMF 64 Tuxtepec','UMF 13 Cuicatlán','UMF 05 Sto.Dgo.Tehuantepec',
+              'UMF 06 Juchitán','UMF 17 Magdalena Apasco','UMF 12 Sto. Domingo Ingenio','UMF 23 Cd. Ixtepec','UMF 27 Ocotlán','UMF 31 Zimatlán de Álvarez',
+              'UMF 30 San Pedro Tapanatepec','UMF 40 Ixtlan de Juárez','UMF 32 Puerto Escondido','UMF 33 Pedro Pochutla','UMF 29 Barrio La Soledad',
+              'UMF 26 Pinotepa','UMF 58 Teotitlán','UMF 57 San Pablo Villa de Etla','UMF 56 San Pablo Huitzo','UMF 59 Loma Bonita','UMRM 21 Tamazulapan','UMAA Oaxaca',
+              'HGZ 01 Oaxaca','HGZMF 02 Salina Cruz','HGZ 03 Tuxtepec','HGSMF 41 Huatulco','Oaxaca'];
+  /*unidades1 = ['UMF 01','UMF 38','UMF 65','UMF 64','UMF 13','UMF 05','UMF 06','UMF 17','UMF 12','UMF 23','UMF 27','UMF 31','UMF 30','UMF 40','UMF 32',
+                'UMF 33','UMF 29','UMF 26','UMF 58','UMF 57','UMF 56','UMF 59','UMRM 21','UMAA','HGZ 01','HGZMF 02','HGZ 03','HGSMF 41','Oaxaca'];
+  unidades2 = ['HGZ 01','HGZMF 02','HGZ 03','HGSMF 41','Oaxaca'];*/
   const meses = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
@@ -941,6 +1020,7 @@
   labels = ["Esperado", "Bajo", "Medio", "Sin datos"];
   puntoResaltado = null;
   n_indicadores = "--";
+  fechas = ['enero 2025', 'febrero 2025'];
 
   fetch("https://script.google.com/macros/s/AKfycbxbdwnq17ukuBOPxtHR52a12NcrR4V5LiTujKCPFWMKoYztEFmIBk6pyeyHG2UwVMamog/exec")
     .then(response => response.json())
@@ -960,14 +1040,18 @@
         medio_: row['MEDIO'],
         bajo_: row['BAJO']
       }));
-    console.log(datos);
+    //console.log(datos);
     console.log("Termina de preparar los datos. Comienza a graficar.");
     datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
     document.getElementById('loader-overlay').style.display = 'none';
+    // Inicializar calendario
+    console.log(fechas);
+    updateYearDisplay();
+    updateSelectedMonth();
   });
-
+    
   Plotly.newPlot("desempeños", 
     [{
         type: "pie",
@@ -1124,8 +1208,11 @@
     }); // indicadores_2
 
   let currentYear = new Date().getFullYear();
-  let selectedMonth = new Date().getMonth() + 1;
-
+  let selectedMonth = ((new Date().getMonth() - 1) <= 0) ? 1:new Date().getMonth() - 1;
+  mes_deseado = meses[selectedMonth-1];
+  año_deseado = currentYear;
+  fecha_deseada = mes_deseado.concat(' ', año_deseado);
+  //console.log('ho',selectedMonth);
   // Inicializar
   updateYearDisplay();
   updateSelectedMonth();
@@ -1162,6 +1249,20 @@
   function updateYearDisplay() {
     document.querySelector('.año-actual').textContent = currentYear;
     document.getElementById('selected-year').textContent = currentYear;
+
+    // Actualizar estado habilitado/deshabilitado de botones de mes
+    document.querySelectorAll('.month-btn').forEach(btn => {
+      const mesTexto = meses[parseInt(btn.dataset.month) - 1].toLowerCase();
+      const fechaTexto = `${mesTexto} ${currentYear}`.toLowerCase();
+
+      if (fechas.includes(fechaTexto)) {
+        btn.disabled = false;
+        btn.classList.remove('disabled'); // Opcional para estilo
+      } else {
+        btn.disabled = true;
+        btn.classList.add('disabled'); // Opcional para estilo visual
+      }
+    });
   }
 
   function updateSelectedMonth() {
@@ -1197,14 +1298,16 @@
 
     // Evento click
     btn.addEventListener("click", () => {
-      console.log(unidad);
+      unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
+      console.log(unidad_completa);
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
         document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
         btn.classList.add("activo");  // asignar estilo activo solo a uno.        
       });
 
-      unidad_deseada = unidad;
+      unidad_deseada = unidad_completa;
+      document.getElementById('selected-unit').textContent = unidad_deseada;
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
@@ -1217,23 +1320,26 @@
     const btn = document.createElement("button");
     btn.className = 'btn-unidad';
     btn.textContent = unidad;
+    //unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
 
     btn.addEventListener("click", () => {
-      console.log(unidad);
+      unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
+      console.log(unidad_completa);
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones1 button", "#botones2 button").forEach(b => {
         document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
         btn.classList.add("activo");  // asignar estilo activo solo a uno.
       });
 
-      unidad_deseada = unidad;
+      unidad_deseada = unidad_completa;
+      document.getElementById('selected-unit').textContent = unidad_deseada;
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
     });    
     contenedor2.appendChild(btn);
   });
-  
+    
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
     desempeño = punto.label;
@@ -1248,7 +1354,7 @@
   document.getElementById("indicadores_1").on('plotly_click', function(data4) {
     var punto = data4.points[0];
     indicador_deseado = punto.x;
-    console.log('click en:',punto);
+    // console.log('click en:',punto);
     // Actualizando Graficas
     actualizarGrafica4(datos, unidad_deseada, indicador_deseado, desempeño);
   });
