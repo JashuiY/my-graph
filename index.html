@@ -74,6 +74,19 @@
       margin-left: auto;
       margin-right: auto;
     }
+    #ranking_1N, #ranking_2N, #ranking2 {
+      width: 100%;
+      height: 500px;
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      font-family: 'Noto Sans';/*''Segoe UI', system-ui, sans-serif';*/
+      border: 1px solid rgba(0,0,0,0.05);
+      /*overflow: hidden;*/
+      margin-left: auto;
+      margin-right: auto;
+    }
     #indicadores_1 {
       height: 700px;
       background: white;
@@ -329,6 +342,7 @@
     <div class="selected-display">
       <span id="selected-month">Septiembre</span>
       <span id="selected-year">2023</span>
+      <span>-</span>
       <span id="selected-unit">Oaxaca</span>
     </div>
   </div>
@@ -373,6 +387,18 @@
       <div class="botones" id="botones2"></div>
       <div class="botones" id="botones1"></div>
 
+  </div>
+
+  <div class="contenedor">    
+    <div id="ranking_1N" class="grafica"></div>
+  </div>
+
+  <div class="contenedor">    
+    <div id="ranking_2N" class="grafica"></div>
+  </div>
+
+  <div class="contenedor">    
+    <div id="ranking2" class="grafica" hidden></div>
   </div>
 
   <div class="contenedor">
@@ -462,6 +488,80 @@
   </div>
 
   <script>
+  function analisisRanking(datos_pond_fecha, nivel){
+    const resultado = {};
+
+    datos_pond_fecha.forEach(row => {
+      const indicador = row.indicador;
+      const ind = row.ind;
+      const unidad = row.unidad;
+      const pond_obt = parseFloat(row.pond_obt) || 0;
+      const pond_est = parseFloat(row.pond_est) || 0;
+      
+      if (row.nivel == nivel || row.nivel == 'Ambos'){
+        // Inicializa estructura para unidad si no existe
+        if (!resultado[unidad]){
+          resultado[unidad] = {
+            inds: {},
+            pond_proc_obt: 0,
+            pond_norm_obt: 0,
+            pond_proc_est: 0,
+            pond_norm_est: 0,
+            pond_aju: 0,
+            color: 'orange'
+          };
+        }
+
+        // Inicializa estructura para grupo indicador si no existe
+        if (!resultado[unidad].inds[ind]){
+          resultado[unidad].inds[ind] = {
+            indicadores: {},
+            pond_obt: 0,
+            pond_est: 0          
+          };
+        }
+
+        // Inicializa estructura para indicador si no existe
+        if (!resultado[unidad].inds[ind].indicadores[indicador]){
+          resultado[unidad].inds[ind].indicadores[indicador] = {
+            pond_obt: 0,
+            pond_est: 0          
+          };
+        }
+
+        // Suma los valores en el indicador
+        resultado[unidad].inds[ind].indicadores[indicador].pond_obt += pond_obt;
+        resultado[unidad].inds[ind].indicadores[indicador].pond_est += pond_est;
+
+        // Suma los valores en el grupo indicador
+        resultado[unidad].inds[ind].pond_obt += pond_obt;
+        resultado[unidad].inds[ind].pond_est += pond_est;
+
+        // Suma los totales del indicador
+        if (procesos.includes(ind)){
+          resultado[unidad].pond_proc_obt += pond_obt*0.6;
+          resultado[unidad].pond_proc_est += pond_est*0.6;
+        } else if (normativos.includes(ind)){
+          resultado[unidad].pond_norm_obt += pond_obt*0.4;
+          resultado[unidad].pond_norm_est += pond_est*0.4;
+        }
+      }
+    });
+
+    // Calcula pond_aju para cada indicador
+    Object.values(resultado).forEach(obj => {
+      obj.pond_aju = ((obj.pond_proc_obt/obj.pond_proc_est*60) + (obj.pond_norm_obt/obj.pond_norm_est*40));
+      if (obj.pond_aju >= 80) {
+        obj.color = 'green';
+      } else if (obj.pond_aju >= 60){
+        obj.color = 'orange';
+      } else {
+        obj.color = 'red';
+      }
+    });
+    return resultado;
+  }
+
   function formatearFecha(fecha) {
     const date = new Date(fecha);
     const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -487,6 +587,7 @@
     result += line.trim(); // Agrega la última línea
     return result;
   }
+
   function filtrarErrores(datosFiltrados) {
     const datosConError = datosFiltrados.map(row => {
       const indicador = row['indicador'];
@@ -627,6 +728,12 @@
     }
   }
 
+  function filtrarFecha(datos, fechaSeleccionada){
+    return datos.filter(d =>
+      d.fecha === fechaSeleccionada
+    );
+  }
+
   function filtrarUnidadFecha(datos, unidadSeleccionada, fechaSeleccionada) {
     return datos.filter(d =>
       d.unidad === unidadSeleccionada && d.fecha === fechaSeleccionada
@@ -660,7 +767,80 @@
 
     return conteo;
   }
+/*
+  function actualizarGrafica1(punto){
+    var latitud_seleccionada = punto.lat;
+    var longitud_seleccionada = punto.lon;
+    
+    Plotly.react('mapa', 
+      [{
+        type: 'scattergeo',
+        mode: 'markers',
+        lat: latitudes,  // latitudes
+        lon: longitudes, // longitudes
+        text: nombres,
+        marker: {
+          size: [
+            '15','15','15','15','15','20','15','15','20','15','20','15','15','15','15','15','15','15','15','15','15','15','15','15','15','15','20','20'],// [20, 30]
+          color: [
+            'green','green','green','green','green','coral','green','green','coral','green','coral','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','coral','coral']//['green', 'red']
+        },
+        showlegend: false
+      }],
+      {
+        title: {
+          text: `${unidad_deseada}`,
+          font: {
+            size: 24,
+            color: "black"
+          },
+          //xref: 'paper',
+          x: 0.5, // Centrado
+          xanchor: 'center'
+        },
+        geo: {
+          scope: "north america",  // o usa 'north america' si quieres limitar
+          projection: { type: "mercator" },
+          center: { lat: latitud_seleccionada, lon: longitud_seleccionada },
+          resolution: 60,
+          lonaxis: { range: [-100, -94] },  // ajusta el área visible si quieres
+          lataxis: { range: [16.3, 19.5] },
+          showland: true,
+          landcolor: "rgb(243, 243, 243)",
+          countrycolor: "rgb(204, 204, 204)",
+          projection: { scale: 1 }
+        },
+        //margin: { t: 50, b: 0, l: 0, r: 0 }
+      }
+    ); // mapa
+    
+    // Eliminar highlight anterior si existe
+    if (document.getElementById('mapa').data.length > 1) {
+      Plotly.deleteTraces('mapa', 1);
+    }
 
+    // Crear nuevo punto resaltado
+    Plotly.addTraces('mapa', {
+      type: 'scattergeo',
+      mode: 'markers',
+      lat: [latitud_seleccionada],
+      lon: [longitud_seleccionada],
+      marker: {
+        size: 30,
+        color: 'yellow',
+        opacity: 0.5,
+        line: {
+          width: 4,
+          color: 'gold'
+        }
+      },
+      hoverinfo: 'skip',  // Opcional, para que no muestre tooltip
+      showlegend: false
+    }).then((res) => {
+      console.log('Resaltando punto');
+    });
+  }
+*/
   function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
@@ -916,7 +1096,7 @@
         lim_sup = index_fecha+1;
       }
     }
-    console.log('aqui', fechas, index_fecha, fechas_, fechas.slice(lim_inf,lim_sup));
+    //console.log('aqui', fechas, index_fecha, fechas_, fechas.slice(lim_inf,lim_sup));
     
     Plotly.react("indicadores_2", [
       {
@@ -979,6 +1159,124 @@
     });
   }
 
+  function actualizarRankingPN(datos_pond, fecha_deseada){
+    datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+    console.log(datos_pond_fecha);
+
+    ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
+    //ranking_nivel_2 = analisisRanking(datos_pond_fecha, 'Segundo Nivel');
+
+    const datosOrdenados_1 = Object.entries(ranking_nivel_1)
+      .map(([unidad, valores]) => ({
+        unidad,
+        pond_aju: valores.pond_aju,
+        color: valores.color
+      }))
+      .sort((a, b) => b.pond_aju - a.pond_aju);  // De mayor a menor
+    console.log(datosOrdenados_1);
+    const unidades = datosOrdenados_1.map(d => d.unidad); // etiquetas
+    const valores = datosOrdenados_1.map(d => d.pond_aju);
+    const colores_ranking = datosOrdenados_1.map(d => d.color);
+
+    Plotly.react("ranking_1N",
+      [{
+        type: "bar",
+        x: unidades,
+        y: valores,
+        cliponaxis: false,
+        textposition: 'outside',
+        texttemplate: '<b>%{y:.1f}</b>',
+        textangle: -45,
+        marker: { color: colores_ranking },
+        hoverlabel: {
+          bgcolor: color_deseado,
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+        },
+        margin: { b: 150 },
+        showlegend: false
+      }],
+      {
+        title: {
+          text: `Ranking de Primer Nivel, ${fecha_deseada}`,
+          font: { size: 24, color: "black" },
+          x: 0.5
+        },
+        yaxis: { title: "Valor" },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: '#f9f9f9',
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.2)',
+          x: 3,
+          y: 3,
+          blur: 10
+        },
+        uniformtext: {
+          minsize: 14   // Tamaño mínimo de fuente
+        }
+      }
+    ); // ranking_1N
+  }
+
+  function actualizarRankingSN(datos_pond, fecha_deseada){
+    datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+    console.log(datos_pond_fecha);
+
+    //ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
+    ranking_nivel_2 = analisisRanking(datos_pond_fecha, 'Segundo Nivel');
+
+    const datosOrdenados_2 = Object.entries(ranking_nivel_2)
+      .map(([unidad, valores]) => ({
+        unidad,
+        pond_aju: valores.pond_aju,
+        color: valores.color
+      }))
+      .sort((a, b) => b.pond_aju - a.pond_aju);  // De mayor a menor
+    console.log(datosOrdenados_2);
+    const unidades = datosOrdenados_2.map(d => d.unidad); // etiquetas
+    const valores = datosOrdenados_2.map(d => d.pond_aju);
+    const colores_ranking = datosOrdenados_2.map(d => d.color);
+
+    Plotly.react("ranking_2N",
+      [{
+        type: "bar",
+        x: unidades,
+        y: valores,
+        cliponaxis: false,
+        textposition: 'outside',
+        texttemplate: '<b>%{y:.1f}</b>',
+        textangle: -45,
+        marker: { color: colores_ranking },
+        hoverlabel: {
+          bgcolor: color_deseado,
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+        },
+        margin: { b: 150 },
+        showlegend: false
+      }],
+      {
+        title: {
+          text: `Ranking de Segundo Nivel, ${fecha_deseada}`,
+          font: { size: 24, color: "black" },
+          x: 0.5
+        },
+        yaxis: { title: "Valor" },
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: '#f9f9f9',
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.2)',
+          x: 3,
+          y: 3,
+          blur: 10
+        },
+        uniformtext: {
+          minsize: 14   // Tamaño mínimo de fuente
+        }
+      }
+    ); // ranking_1N
+  }
+
   // -------------- COORDENADAS -------------------- //
   latitudes = [16.3673,16.5853,16.4342,16.5548,16.8022,16.2022,16.3296,18.1065,15.7617,18.0829,18.0822,15.7363,17.3319,16.7944,
                17.0782,17.0701,17.0672,16.8664,17.2101,17.2411,17.2818,17.7983,15.8635,18.1312,16.3395,17.6718,17.0723,17.0720];
@@ -1021,11 +1319,18 @@
   puntoResaltado = null;
   n_indicadores = "--";
   fechas = ['enero 2025', 'febrero 2025'];
+  
+  // ---------- RANKING ------------------ //
+  nivel_deseado = 'Primer Nivel';
+  procesos = ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'S.Ob'];
+  normativos = ['CUPN', 'CUSN', 'CVE', 'CES','CTE', 'IAAS'];
 
-  fetch("https://script.google.com/macros/s/AKfycbxbdwnq17ukuBOPxtHR52a12NcrR4V5LiTujKCPFWMKoYztEFmIBk6pyeyHG2UwVMamog/exec")
+
+  fetch("https://script.google.com/macros/s/AKfycbz0f3Y7rHNwbWDwcgPWYdbQ-C-aACwyU4_4WliqSStqKaMidZXzMDKcxCWaGKNx4SuHMg/exec") //"https://script.google.com/macros/s/AKfycbxbdwnq17ukuBOPxtHR52a12NcrR4V5LiTujKCPFWMKoYztEFmIBk6pyeyHG2UwVMamog/exec")
     .then(response => response.json())
     .then(data => {
-      datos = data.map(row => ({
+      data_1 = data.resultados;
+      datos = data_1.map(row => ({
         fecha: formatearFecha(row['FECHA']),
         unidad: row["UNIDAD"],
         ind: row["IND"],
@@ -1040,18 +1345,183 @@
         medio_: row['MEDIO'],
         bajo_: row['BAJO']
       }));
-    //console.log(datos);
+      data_2 = data.ponderaciones;
+      datos_pond = data_2.map(row => ({
+        fecha: formatearFecha(row['FECHA']),
+        indicador: row['INDICADOR'],
+        unidad: row['UNIDAD MEDICA'],
+        ind: row['IND'],
+        pond_est: row['POND. ESTIMADA'],
+        pond_obt: row['POND. OBTENIDA'],
+        nivel: row['NIVEL']
+      }));
+    // console.log(datos, datos_pond);
     console.log("Termina de preparar los datos. Comienza a graficar.");
     datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+    actualizarRankingPN(datos_pond, fecha_deseada);
+    actualizarRankingSN(datos_pond, fecha_deseada);
     document.getElementById('loader-overlay').style.display = 'none';
     // Inicializar calendario
     console.log(fechas);
     updateYearDisplay();
     updateSelectedMonth();
   });
-    
+/*
+  Plotly.newPlot('mapa', 
+    [{
+      type: 'scattergeo',
+      mode: 'markers',
+      lat: latitudes,  // latitudes
+      lon: longitudes, // longitudes
+      text: nombres,
+      marker: {
+        size: [
+          '15','15','15','15','15','20','15','15','20','15','20','15','15','15','15','15','15','15','15','15','15','15','15','15','15','15','20','20'],// [20, 30]
+        color: [
+          'green','green','green','green','green','coral','green','green','coral','green','coral','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','coral','coral']//['green', 'red']
+      },
+      showlegend: false
+    }],
+    {
+      title: {
+        text: 'Ubicación de Unidades de OOAD OAXACA',
+        font: {
+          size: 24,
+          color: "black"
+        },
+        //xref: 'paper',
+        x: 0.5, // Centrado
+        xanchor: 'center'
+      },
+      geo: {
+        scope: "north america",  // o usa 'north america' si quieres limitar
+        projection: { type: "mercator" },
+        center: { lat: 17.2, lon: -96.2 },
+        resolution: 150,
+        lonaxis: { range: [-100, -94] },  // ajusta el área visible si quieres
+        lataxis: { range: [16.3, 19.5] },
+        showland: true,
+        landcolor: "rgb(243, 243, 243)",
+        countrycolor: "rgb(204, 204, 204)",
+        projection: { scale: 1 }
+      },
+      //margin: { t: 50, b: 0, l: 0, r: 0 }
+    }
+  ); // mapa
+*/
+  Plotly.newPlot("ranking_1N",
+    [{
+      type: "bar",
+      x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+      y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+      cliponaxis: false,
+      texttemplate: ' ',
+      marker: { color: color_deseado },
+      hoverlabel: {
+        bgcolor: color_deseado,
+        font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+      },
+      margin: { b: 150 },
+      showlegend: false
+    }],
+    {
+      title: {
+        text: `Ranking de Primer Nivel, ${fecha_deseada}`,
+        font: { size: 24, color: "black" },
+        x: 0.5
+      },
+      yaxis: { title: "Valor" },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: '#f9f9f9',
+      shadow: {
+        enabled: true,
+        color: 'rgba(0,0,0,0.2)',
+        x: 3,
+        y: 3,
+        blur: 10
+      },
+      uniformtext: {
+        minsize: 14   // Tamaño mínimo de fuente
+      }
+    }
+  ); // ranking_1N
+
+  Plotly.newPlot("ranking_2N",
+    [{
+      type: "bar",
+      x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+      y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+      cliponaxis: false,
+      texttemplate: ' ',
+      marker: { color: color_deseado },
+      hoverlabel: {
+        bgcolor: color_deseado,
+        font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+      },
+      margin: { b: 150 },
+      showlegend: false
+    }],
+    {
+      title: {
+        text: `Ranking de Segundo Nivel, ${fecha_deseada}`,
+        font: { size: 24, color: "black" },
+        x: 0.5
+      },
+      yaxis: { title: "Valor" },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: '#f9f9f9',
+      shadow: {
+        enabled: true,
+        color: 'rgba(0,0,0,0.2)',
+        x: 3,
+        y: 3,
+        blur: 10
+      },
+      uniformtext: {
+        minsize: 14   // Tamaño mínimo de fuente
+      }
+    }
+  ); // ranking_2N
+
+  Plotly.newPlot("ranking2", 
+    [{
+      type: "bar",
+      x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+      y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+      cliponaxis: false,
+      texttemplate: ' ',
+      marker: { color: color_deseado },
+      hoverlabel: {
+        bgcolor: color_deseado,
+        font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+      },
+      margin: { b: 150 },
+      showlegend: false
+    }], 
+    {
+      title: {
+        text: `Ponderación obtenida por indicador.`,
+        font: { size: 24, color: "black" },
+        x: 0.5
+      },
+      yaxis: { title: "Valor" },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: '#f9f9f9',
+      shadow: {
+        enabled: true,
+        color: 'rgba(0,0,0,0.2)',
+        x: 3,
+        y: 3,
+        blur: 10
+      },
+      uniformtext: {
+        minsize: 14   // Tamaño mínimo de fuente
+      }
+    }
+  ); // ranking2
+
   Plotly.newPlot("desempeños", 
     [{
         type: "pie",
@@ -1205,7 +1675,8 @@
       yaxis: { title: "Valor" },
       plot_bgcolor: 'rgba(0,0,0,0)',
       paper_bgcolor: '#f9f9f9'
-    }); // indicadores_2
+    }
+  ); // indicadores_2
 
   let currentYear = new Date().getFullYear();
   let selectedMonth = ((new Date().getMonth() - 1) <= 0) ? 1:new Date().getMonth() - 1;
@@ -1243,6 +1714,8 @@
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+      actualizarRankingPN(datos_pond, fecha_deseada);      
+      actualizarRankingSN(datos_pond, fecha_deseada);
     });
   });
 
@@ -1287,19 +1760,13 @@
     const btn = document.createElement("button");
     btn.className = 'btn-unidad';
     btn.textContent = unidad;
-    /*
-    btn.style.margin = "5px";
-    btn.style.padding = "10px";
-    btn.style.borderRadius = "8px";
-    btn.style.border = "1px solid #ccc";
-    btn.style.cursor = "pointer";
-    btn.style.backgroundColor = 'blue';
-    */
 
     // Evento click
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
+      document.getElementById('ranking_1N').hidden = false;
+      document.getElementById('ranking_2N').hidden = true;
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
         document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
@@ -1325,6 +1792,8 @@
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
+      document.getElementById('ranking_1N').hidden = true;
+      document.getElementById('ranking_2N').hidden = false;
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones1 button", "#botones2 button").forEach(b => {
         document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
@@ -1339,7 +1808,21 @@
     });    
     contenedor2.appendChild(btn);
   });
-    
+
+/*
+  document.getElementById("mapa").on('plotly_click', function(data2) {
+    var punto = data2.points[0];
+    unidad_deseada = punto.text;
+    console.log("Clic en:", unidad_deseada, punto);
+    n_indicadores = "--";
+
+    // Actualizando Graficas
+    actualizarGrafica1(punto);
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+    indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+    actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+  });
+*/
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
     desempeño = punto.label;
