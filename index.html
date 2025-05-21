@@ -35,6 +35,15 @@
       width: var(--ancho);
       align-items: center;
     }
+    .contenedor_vertical {
+      display: flex;
+      gap: 20px; /* Espacio entre gráficos */
+      margin-bottom: 20px;
+      margin-left: auto;
+      margin-right: auto;
+      width: var(--ancho);
+      align-items: center;
+    }
     .contenedor_2 {
       display: flex;
       gap: 20px; /* Espacio entre gráficos */
@@ -55,7 +64,7 @@
     }
     .grafica {
       flex: 1;
-      height: 500px;
+      /*height: 500px;*/
     }
     #mapa {
       flex: 1;
@@ -76,7 +85,7 @@
     }
     #ranking_1N, #ranking_2N, #ranking2 {
       width: 100%;
-      height: 500px;
+      /*height: 500px;*/
       background: white;
       border-radius: 16px;
       padding: 20px;
@@ -389,7 +398,7 @@
 
   </div>
 
-  <div class="contenedor">    
+  <div class="contenedor_vertical">    
     <div id="ranking_1N" class="grafica"></div>
   </div>
 
@@ -1161,10 +1170,9 @@
 
   function actualizarRankingPN(datos_pond, fecha_deseada){
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
-    console.log(datos_pond_fecha);
 
     ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
-    //ranking_nivel_2 = analisisRanking(datos_pond_fecha, 'Segundo Nivel');
+    console.log(ranking_nivel_1);
 
     const datosOrdenados_1 = Object.entries(ranking_nivel_1)
       .map(([unidad, valores]) => ({
@@ -1173,37 +1181,74 @@
         color: valores.color
       }))
       .sort((a, b) => b.pond_aju - a.pond_aju);  // De mayor a menor
-    console.log(datosOrdenados_1);
+    
+    const sumaTotal = datosOrdenados_1.reduce((acc, d) => acc + d.pond_aju, 0);
+    const promedio = sumaTotal / datosOrdenados_1.length;
+    datosOrdenados_1.push({
+      unidad: 'Promedio',
+      pond_aju: promedio,
+      color: 'deepskyblue'
+    })
+    datosOrdenados_1.sort((a, b) => b.pond_aju - a.pond_aju);
+    //console.log(datosOrdenados_1, typeof datosOrdenados_1);
     const unidades = datosOrdenados_1.map(d => d.unidad); // etiquetas
     const valores = datosOrdenados_1.map(d => d.pond_aju);
     const colores_ranking = datosOrdenados_1.map(d => d.color);
+    const textos = datosOrdenados_1.map((valor, i) => {
+      const unidad = unidades[i];
+      const partes = unidad.split(' ');
+      return (partes.length >= 2) ? partes.slice(0, 2).join(' ') : partes[0];
+    })
 
     Plotly.react("ranking_1N",
-      [{
-        type: "bar",
-        x: unidades,
-        y: valores,
-        cliponaxis: false,
-        textposition: 'outside',
-        texttemplate: '<b>%{y:.1f}</b>',
-        textangle: -45,
-        marker: { color: colores_ranking },
-        hoverlabel: {
-          bgcolor: color_deseado,
-          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+      [
+        {
+          type: "bar",
+          orientation: 'h',
+          y: unidades,
+          x: valores,
+          text: textos,
+          cliponaxis: false,
+          textposition: 'outside',
+          texttemplate: '<b>%{x:.2f}</b>',
+          /*textangle: -45,*/
+          textfont: {size: 25},
+          marker: { color: colores_ranking },
+          hovertemplate: '<b>%{text}</b><br>%{x:.4f}<extra></extra>',
+          hoverlabel: {
+            bgcolor: colores_ranking,
+            font: { family: 'Noto Sans', size: 25}
+          }
         },
-        margin: { b: 150 },
-        showlegend: false
-      }],
+        {
+          y: [unidad_deseada],
+          x: [valores[unidades.indexOf(unidad_deseada)]],
+          type: 'bar',
+          orientation: 'h',
+          /*name: 'Unidad resaltada',*/
+          marker: { 
+            color: colores_ranking[unidades.indexOf(unidad_deseada)],
+            line: {
+              color: 'rgba(0,0,0,0.3)', // Borde sutil
+              width: 8
+            }
+          },
+          hoverinfo: 'none',
+          hovertemplate: ''
+          /*width: [1.0]  // Ancho personalizado para esta barra*/
+        }
+      ],
       {
+        barmode: 'overlay',
         title: {
           text: `Ranking de Primer Nivel, ${fecha_deseada}`,
           font: { size: 24, color: "black" },
           x: 0.5
         },
-        yaxis: { title: "Valor" },
+        height: 1000,
+        xaxis: { title: "Valor" },
         plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: '#f9f9f9',
+        paper_bgcolor: 'rgba(0,0,0,0)',
         shadow: {
           enabled: true,
           color: 'rgba(0,0,0,0.2)',
@@ -1211,6 +1256,8 @@
           y: 3,
           blur: 10
         },
+        showlegend: false,
+        margin: { l: 200 },
         uniformtext: {
           minsize: 14   // Tamaño mínimo de fuente
         }
@@ -1220,9 +1267,8 @@
 
   function actualizarRankingSN(datos_pond, fecha_deseada){
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
-    console.log(datos_pond_fecha);
+    //console.log(datos_pond_fecha);
 
-    //ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
     ranking_nivel_2 = analisisRanking(datos_pond_fecha, 'Segundo Nivel');
 
     const datosOrdenados_2 = Object.entries(ranking_nivel_2)
@@ -1232,29 +1278,62 @@
         color: valores.color
       }))
       .sort((a, b) => b.pond_aju - a.pond_aju);  // De mayor a menor
-    console.log(datosOrdenados_2);
+    const sumaTotal = datosOrdenados_2.reduce((acc, d) => acc + d.pond_aju, 0);
+    const promedio = sumaTotal / datosOrdenados_2.length;
+    datosOrdenados_2.push({
+      unidad: 'Promedio',
+      pond_aju: promedio,
+      color: 'deepskyblue'
+    });
+    datosOrdenados_2.sort((a, b) => b.pond_aju - a.pond_aju);
+    //console.log(datosOrdenados_2);
     const unidades = datosOrdenados_2.map(d => d.unidad); // etiquetas
     const valores = datosOrdenados_2.map(d => d.pond_aju);
     const colores_ranking = datosOrdenados_2.map(d => d.color);
+    const textos = datosOrdenados_2.map((valor, i) => {
+      const unidad = unidades[i];
+      const partes = unidad.split(' ');
+      return (partes.length >= 2) ? partes.slice(0, 2).join(' ') : partes[0];
+    })
 
     Plotly.react("ranking_2N",
-      [{
-        type: "bar",
-        x: unidades,
-        y: valores,
-        cliponaxis: false,
-        textposition: 'outside',
-        texttemplate: '<b>%{y:.1f}</b>',
-        textangle: -45,
-        marker: { color: colores_ranking },
-        hoverlabel: {
-          bgcolor: color_deseado,
-          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+      [
+        {
+          type: "bar",
+          x: unidades,
+          y: valores,
+          text: textos,
+          cliponaxis: false,
+          textposition: 'outside',
+          texttemplate: '<b>%{y:.2f}</b>',
+          /*textangle: -45,*/
+          textfont: {size: 20},
+          marker: { color: colores_ranking },
+          hovertemplate: '<b>%{text}</b><br>%{y:.4f}<extra></extra>',
+          hoverlabel: {
+            bgcolor: colores_ranking,
+            font: { family: 'Noto Sans', size: 20}
+          }
         },
-        margin: { b: 150 },
-        showlegend: false
-      }],
+        {
+          x: [unidad_deseada],
+          y: [valores[unidades.indexOf(unidad_deseada)]],
+          type: 'bar',
+          /*name: 'Unidad resaltada',*/
+          marker: { 
+            color: colores_ranking[unidades.indexOf(unidad_deseada)],
+            line: {
+              color: 'rgba(0,0,0,0.3)', // Borde sutil
+              width: 8
+            }
+          },
+          hoverinfo: 'none',
+          hovertemplate: ''
+          /*width: [1.0]  // Ancho personalizado para esta barra*/
+        }
+      ],
       {
+        barmode: 'overlay',
         title: {
           text: `Ranking de Segundo Nivel, ${fecha_deseada}`,
           font: { size: 24, color: "black" },
@@ -1262,7 +1341,7 @@
         },
         yaxis: { title: "Valor" },
         plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: '#f9f9f9',
+        paper_bgcolor: 'rgba(0,0,0,0)',
         shadow: {
           enabled: true,
           color: 'rgba(0,0,0,0.2)',
@@ -1270,9 +1349,11 @@
           y: 3,
           blur: 10
         },
+        /*margin: { t: 150 },*/
         uniformtext: {
           minsize: 14   // Tamaño mínimo de fuente
-        }
+        },
+        showlegend: false
       }
     ); // ranking_1N
   }
@@ -1766,7 +1847,11 @@
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
       document.getElementById('ranking_1N').hidden = false;
-      document.getElementById('ranking_2N').hidden = true;
+      if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
+        document.getElementById('ranking_2N').hidden = false;
+      } else{
+        document.getElementById('ranking_2N').hidden = true;
+      }
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
         document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
@@ -1778,6 +1863,8 @@
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+      actualizarRankingPN(datos_pond, fecha_deseada);
+      actualizarRankingSN(datos_pond, fecha_deseada);
     });    
     contenedor1.appendChild(btn);
   });
@@ -1792,7 +1879,11 @@
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
-      document.getElementById('ranking_1N').hidden = true;
+      if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
+        document.getElementById('ranking_1N').hidden = false;
+      } else{
+        document.getElementById('ranking_1N').hidden = true;
+      }
       document.getElementById('ranking_2N').hidden = false;
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones1 button", "#botones2 button").forEach(b => {
@@ -1805,6 +1896,8 @@
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+      actualizarRankingPN(datos_pond, fecha_deseada);
+      actualizarRankingSN(datos_pond, fecha_deseada);
     });    
     contenedor2.appendChild(btn);
   });
