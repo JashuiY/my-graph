@@ -728,10 +728,10 @@
   function calcularColor(valor, esperado, medio, bajo) {
     if (evaluarCondicion(valor, esperado)) {
       return "green";
-    } else if (evaluarCondicion(valor, medio)) {
-      return "orange";
     } else if (evaluarCondicion(valor, bajo)) {
       return "red";
+    } else if (evaluarCondicion(valor, medio)) {
+      return "orange";
     } else {
       return "white";
     }
