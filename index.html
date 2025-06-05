@@ -83,7 +83,7 @@
       margin-left: auto;
       margin-right: auto;
     }
-    #ranking_1N, #ranking_2N, #ranking2 {
+    #ranking_1N, #ranking_2N, #ranking2, #ranking2-2 {
       width: 100%;
       /*height: 500px;*/
       background: white;
@@ -123,9 +123,9 @@
 
     .btn-unidad{
       min-width: 50px;
-      width: 20%;/*130px;*/
+      width: 21%;/*130px;*/
       height: 40px;
-      padding: 10px 5px;
+      padding: 5px 5px;
       border: none;
       border-radius: 6px;
       font-weight: bold;
@@ -281,6 +281,7 @@
       cursor: not-allowed;
     }
     .selected-display {
+      /*flex: 1;*/
       background: rgba(0, 178, 152,0.25);/*rgba(208, 184, 166, 0.1);rgba(76, 175, 80, 0.08)*/
       padding: 15px;
       border-radius: 12px;
@@ -288,7 +289,7 @@
       font-size: 24px;
       color: #006657;/*2E7D32*/
       margin-top: 5px;
-      display: flex;
+      /*display: flex;*/
       justify-content: center;
       gap: 10px;
     }
@@ -343,6 +344,21 @@
       margin-bottom: 10px;
       margin-top: auto;
     }
+    .rank_unidad {
+      /*flex: 1;*/
+      background: rgba(0, 0, 0, 0.25);
+      color: #000000;
+      font-weight: 600;
+      text-align: center;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 24px;
+      justify-content: center;
+    }
+    .rank_title{
+      font-size: 12px;
+      font-weight: 500;
+    }
 
   </style>
 </head>
@@ -353,6 +369,14 @@
       <span id="selected-year">2023</span>
       <span>-</span>
       <span id="selected-unit">Oaxaca</span>
+    </div>
+    <div class="rank_unidad" id="rank_unidad_1" hidden>
+      <div class="rank_title" id="rank_title_1">1 Nivel</div>
+      <span id="rank_1">71.5</span>
+    </div>
+    <div class="rank_unidad" id="rank_unidad_2">
+      <div class="rank_title" id="rank_title_2">2 Nivel</div>
+      <span id="rank_2">60.0</span>
     </div>
   </div>
   
@@ -402,12 +426,16 @@
     <div id="ranking_1N" class="grafica"></div>
   </div>
 
+  <div id="div_ranking2" class="contenedor">    
+    <div id="ranking2" class="grafica"></div>
+  </div>
+
   <div class="contenedor">    
     <div id="ranking_2N" class="grafica"></div>
   </div>
 
-  <div class="contenedor">    
-    <div id="ranking2" class="grafica" hidden></div>
+  <div id="div_ranking2-2" class="contenedor">    
+    <div id="ranking2-2" class="grafica"></div>
   </div>
 
   <div class="contenedor">
@@ -465,7 +493,8 @@
               <th style="padding: 8px; border: 1px none; width: 50%; text-align:left; font-size:25px;">-.</th>
             </tr>
           </thead>
-          <tbody id="cuerpo_tabla">
+          <tbody >
+            <td id="cuerpo_tabla" style="text-align: justify; margin-right: 5px;">Texto explicativo</td>
           </tbody>
         </table>
     </div>
@@ -497,6 +526,19 @@
   </div>
 
   <script>
+  function textColorByPonderacion(resultado){
+    if (resultado >= 80) return 'rgba(255,255,255,1)';
+    if (resultado >= 60) return 'rgba(0,0,0,1)';
+    return 'rgba(255,255,255,1)';
+  }
+  function colorByPonderacion(resultado){
+    //let resultado = obtenido / estimado * 100;
+
+    if (resultado >= 80) return 'rgba(0,88,78,1)';
+    if (resultado >= 60) return 'rgba(255,192,0,1)';
+    return 'rgba(255,0,0,1)';
+  }
+
   function analisisRanking(datos_pond_fecha, nivel){
     const resultado = {};
 
@@ -997,7 +1039,8 @@
           mode: "lines+markers",
           x: indicadores,
           y: limites,
-          name: "Valor esperado",
+          //name: "Limite Rango",
+          //hovertemplate: '<b>%{label}</b><br>%{text}<extra></extra>',
           line: {
             shape: "hvh",  // step graph: horizontal-vertical
             color: 'black',
@@ -1006,11 +1049,11 @@
           },
           marker: {
             color: colores_,
-            symbol: 'circle' //"cross-thin"
-            //size: 15
+            symbol: 'circle', //"cross-thin"
+            size: 15
           },
-          //hovertemplate: "<b>%{x}</b><br>Esperado: %{y}<extra></extra>"
-          hovertemplate: "",
+          hovertemplate: "Limite rango: <b>%{y}</b><extra></extra>",
+          //hovertemplate: "",
           showlegend: false
         }
       ], {
@@ -1033,6 +1076,13 @@
         uniformtext: {
           //mode: 'hide', // Oculta etiquetas que no caben
           minsize: 14   // Tamaño mínimo de fuente
+        },
+        xaxis: {
+          /*tickangle: -45, // Puedes probar con -90 si lo quieres vertical*/
+          tickfont: {
+            size: 14,
+            weight: 'bold'
+          }
         }
       }
     );
@@ -1043,13 +1093,16 @@
     const errores2 = datosConError2.map(row => row.error);
     const colores_2 = datosConError2.map(row => row.colorError);
 
+    const textoAnalisis = document.getElementById('cuerpo_tabla');
+    textoAnalisis.innerHTML = `Los indicadores con desempeño <b>${desempeño}</b> enlistados, son aquellos que estuvieron cerca del límite para cambiar a otro nivel de desempeño. Por lo que, se destacan para futuras acciones.` ;
+
     const cuerpoTabla_1 = document.getElementById("cuerpo_tabla_1");
     cuerpoTabla_1.innerHTML = "";
     obs_indicadores = (indicadores2.length < 5) ? indicadores2.length : 5;
     for (i = 0; i < obs_indicadores; i++){
       const fila = document.createElement("tr");
       fila.innerHTML = `
-        <td style="padding: 4px; border: 1px solid #ccc;">${indicadores2[i]}</td>
+        <td style="padding: 4px; border: 1px solid #ccc;"><b>${indicadores2[i]}</b></td>
         <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${valores2[i].toFixed(2)}</td>
         <td style="padding: 4px; border: 1px solid #ccc; text-align: center";>${errores2[i].toFixed(2)}</td>
         <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center;"><span style="color: ${color_deseado};">■</span><span style="font-size:25px;">➔</span><span style="color: ${colores_2[i]};">■</span></td>
@@ -1134,7 +1187,7 @@
         mode: "lines+markers",
         x: fechas.slice(lim_inf,lim_sup),
         y: limites.slice(lim_inf,lim_sup),
-        name: "Valor esperado",
+        //name: "Valor esperado",
         line: {
           shape: "hvh",  // step graph: horizontal-vertical
           color: 'black',
@@ -1146,8 +1199,8 @@
           symbol: 'circle', //"cross-thin"
           size: 15
         },
-        //hovertemplate: "<b>%{x}</b><br>Esperado: %{y}<extra></extra>"
-        hovertemplate: "",
+        hovertemplate: "Limite rango: <b>%{y}</b><extra></extra>",
+        //hovertemplate: "",
         showlegend: false
       }
     ], {
@@ -1164,15 +1217,23 @@
       uniformtext: {
         mode: 'hide', // Oculta etiquetas que no caben
         minsize: 14   // Tamaño mínimo de fuente
+      },
+      xaxis: {
+        /*tickangle: -45, // Puedes probar con -90 si lo quieres vertical*/
+        tickfont: {
+          size: 14,
+          weight: 'bold'
+        }
       }
     });
   }
 
   function actualizarRankingPN(datos_pond, fecha_deseada){
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+    //console.log(datos_pond_fecha)
 
     ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
-    console.log(ranking_nivel_1);
+    //console.log(ranking_nivel_1);
 
     const datosOrdenados_1 = Object.entries(ranking_nivel_1)
       .map(([unidad, valores]) => ({
@@ -1204,28 +1265,28 @@
       [
         {
           type: "bar",
-          orientation: 'h',
-          y: unidades,
-          x: valores,
+          /*orientation: 'h',*/
+          x: unidades,
+          y: valores,
           text: textos,
           cliponaxis: false,
           textposition: 'outside',
-          texttemplate: '<b>%{x:.2f}</b>',
+          texttemplate: '<b>%{y:.2f}</b>',
           /*textangle: -45,*/
           textfont: {size: 25},
           marker: { color: colores_ranking },
-          hovertemplate: '<b>%{text}</b><br>%{x:.4f}<extra></extra>',
+          hovertemplate: '<b>%{text}</b><br>%{y:.4f}<extra></extra>',
           hoverlabel: {
             bgcolor: colores_ranking,
             font: { family: 'Noto Sans', size: 25}
           }
         },
         {
-          y: [unidad_deseada],
-          x: [valores[unidades.indexOf(unidad_deseada)]],
+          x: [unidad_deseada],
+          y: [valores[unidades.indexOf(unidad_deseada)]],
           type: 'bar',
-          orientation: 'h',
-          /*name: 'Unidad resaltada',*/
+          /*orientation: 'h',
+          name: 'Unidad resaltada',*/
           marker: { 
             color: colores_ranking[unidades.indexOf(unidad_deseada)],
             line: {
@@ -1245,8 +1306,8 @@
           font: { size: 24, color: "black" },
           x: 0.5
         },
-        height: 1000,
-        xaxis: { title: "Valor" },
+        height: 600,
+        /*xaxis: { title: "Valor" },*/
         plot_bgcolor: 'rgba(0,0,0,0)',
         paper_bgcolor: 'rgba(0,0,0,0)',
         shadow: {
@@ -1257,9 +1318,16 @@
           blur: 10
         },
         showlegend: false,
-        margin: { l: 200 },
+        margin: { b: 150, l:90, r:10 },
         uniformtext: {
           minsize: 14   // Tamaño mínimo de fuente
+        },
+        padding: {b: 150},
+        xaxis: {
+          tickangle: -45, // Puedes probar con -90 si lo quieres vertical
+          tickfont: {
+            size: 12
+          }
         }
       }
     ); // ranking_1N
@@ -1353,9 +1421,368 @@
         uniformtext: {
           minsize: 14   // Tamaño mínimo de fuente
         },
-        showlegend: false
+        showlegend: false,
+        xaxis: {
+          /*tickangle: -45, // Puedes probar con -90 si lo quieres vertical*/
+          tickfont: {
+            size: 14
+          }
+        }
       }
     ); // ranking_1N
+  }
+
+  function actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada){
+    //document.getElementById('div_ranking2').hidden = false;
+    //document.getElementById('ranking2').hidden = false;
+    datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+    //console.log(datos_pond_fecha);
+    ponderaciones = analisisRanking(datos_pond_fecha, 'Primer Nivel');
+    //console.log(ponderaciones);
+
+    const pond_unidad = Object.fromEntries(Object.entries(ponderaciones).filter(([unidad]) => unidad === unidad_deseada));
+    //console.log(pond_unidad);
+
+    let grupo_indicadores = {};
+    if (pond_unidad[unidad_deseada]) {
+      const unidad = pond_unidad[unidad_deseada];
+      grupo_indicadores = Object.entries(unidad.inds);
+      document.getElementById('rank_1').innerHTML = unidad.pond_aju.toFixed(2);
+      document.getElementById('rank_unidad_1').style.background = colorByPonderacion(unidad.pond_aju).replace(",1)",",.8)");
+      document.getElementById('rank_unidad_1').style.color = textColorByPonderacion(unidad.pond_aju);
+      console.log(unidad);
+    } else {
+      return;
+    }
+
+    const x_labels = grupo_indicadores.map(([nombre]) => nombre);
+    const estimados = grupo_indicadores.map(([_, valor]) => valor.pond_est);
+    const obtenidos = grupo_indicadores.map(([_, valor]) => valor.pond_obt);
+    const col_obtenidos = grupo_indicadores.map(([_, valor]) => {
+      let resultado = valor.pond_obt / valor.pond_est * 100;
+      return colorByPonderacion(resultado);
+    });
+    const col_estimados = grupo_indicadores.map(([_,valor]) => {
+      let resultado = valor.pond_obt / valor.pond_est * 100;
+      return colorByPonderacion(resultado).replace(",1)",",.25)");
+    });
+    const textos = x_labels.map((valor, i) => {
+      const estimado = estimados[i];
+      const obtenido = obtenidos[i];
+      const faltante = estimado - obtenido;
+      return `Obtenida: ${obtenido.toFixed(2)} <br>Estimada: ${estimado.toFixed(2)} <br>Faltante: ${faltante.toFixed(2)}`;
+    });
+    //console.log(x_labels, estimados, obtenidos, col_obtenidos, col_estimados);
+    Plotly.react("ranking2", 
+      [
+        {
+          type: "bar",
+          x: x_labels,
+          y: estimados,
+          cliponaxis: false,
+          textposition: 'outside',
+          texttemplate: '<b>%{y:.1f}</b>',
+          textfont: { size: 18, family: 'Noto Sans' },
+          marker: { 
+            color: col_estimados,
+            line: {color: col_estimados, width: 1}
+          },
+          hoverlabel: {
+            bgcolor: color_deseado,
+            font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false,
+          name: 'Pond. Estimada',
+          hoverinfo: 'none'
+        },
+        {
+          type: "bar",
+          x: x_labels,
+          y: obtenidos,
+          text: textos,
+          cliponaxis: false,
+          textposition: 'inside',
+          texttemplate: '<b>%{y:.1f}</b>',
+          textfont: { size: 18, family: 'Noto Sans' },
+          marker: { 
+            color: col_obtenidos,
+            line: {color: col_estimados, width: 1}
+          },
+          hoverlabel: {
+            bgcolor: 'white',
+            font: { family: 'Noto Sans', color: 'black', size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false,
+          name: 'Pond. Obtenida',
+          hovertemplate: `<b>%{label}</b><br>Ponderación<br>%{text}<extra></extra>`,
+        }
+      ], 
+      {
+        title: {
+          text: `Ponderación obtenida vs estimada - ${unidad_deseada}, ${fecha_deseada}`,
+          font: { size: 24, color: "black" },
+          x: 0.5
+        },
+        /*yaxis: { title: "Valor" },*/
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.2)',
+          x: 3,
+          y: 3,
+          blur: 10
+        },
+        uniformtext: {
+          minsize: 14   // Tamaño mínimo de fuente
+        },
+        barmode: 'overlay',
+        xaxis: {
+          /*tickangle: -45, // Puedes probar con -90 si lo quieres vertical*/
+          tickfont: {
+            size: 16,
+            weight: 'bold'
+          }
+        }
+      }
+    ); // ranking2
+  }
+
+  function actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada){
+    //document.getElementById('div_ranking2-2').hidden = false;
+    //document.getElementById('ranking2-2').hidden = false;
+    datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+    //console.log(datos_pond_fecha);
+    ponderaciones = analisisRanking(datos_pond_fecha, 'Segundo Nivel');
+    //console.log(ponderaciones);
+
+    const pond_unidad = Object.fromEntries(Object.entries(ponderaciones).filter(([unidad]) => unidad === unidad_deseada));
+    //console.log(pond_unidad);
+    let grupo_indicadores = {};
+    if (pond_unidad[unidad_deseada]) {
+      const unidad = pond_unidad[unidad_deseada];
+      grupo_indicadores = Object.entries(unidad.inds);
+      document.getElementById('rank_2').innerHTML = unidad.pond_aju.toFixed(2);
+      document.getElementById('rank_unidad_2').style.background = colorByPonderacion(unidad.pond_aju).replace(",1)",",.8)");
+      document.getElementById('rank_unidad_2').style.color = textColorByPonderacion(unidad.pond_aju);
+      console.log(unidad);
+    } else{
+      return;
+    }
+
+    const x_labels = grupo_indicadores.map(([nombre]) => nombre);
+    const estimados = grupo_indicadores.map(([_, valor]) => valor.pond_est);
+    const obtenidos = grupo_indicadores.map(([_, valor]) => valor.pond_obt);
+    const col_obtenidos = grupo_indicadores.map(([_, valor]) => {
+      const resultado = valor.pond_obt / valor.pond_est * 100;
+      return colorByPonderacion(resultado);
+    });
+    const col_estimados = grupo_indicadores.map(([_,valor]) => {
+      const resultado = valor.pond_obt / valor.pond_est * 100;
+      return colorByPonderacion(resultado).replace(",1)",",.25)");
+    });
+    const textos = x_labels.map((valor, i) => {
+      const estimado = estimados[i];
+      const obtenido = obtenidos[i];
+      const faltante = estimado - obtenido;
+      return `Obtenida: ${obtenido.toFixed(2)} <br>Estimada: ${estimado.toFixed(2)} <br>Faltante: ${faltante.toFixed(2)}`;
+    });
+    //console.log(x_labels, estimados, obtenidos, col_obtenidos, col_estimados);
+    Plotly.react("ranking2-2", 
+      [
+        {
+          type: "bar",
+          x: x_labels,
+          y: estimados,
+          cliponaxis: false,
+          textposition: 'outside',
+          texttemplate: '<b>%{y:.1f}</b>',
+          textfont: { size: 18, family: 'Noto Sans' },
+          marker: { 
+            color: col_estimados,
+            line: {color: col_estimados, width: 1}
+          },
+          hoverlabel: {
+            bgcolor: color_deseado,
+            font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false,
+          name: 'Pond. Estimada',
+          hoverinfo: 'none'
+        },
+        {
+          type: "bar",
+          x: x_labels,
+          y: obtenidos,
+          text: textos,
+          cliponaxis: false,
+          textposition: 'inside',
+          texttemplate: '<b>%{y:.1f}</b>',
+          textfont: { size: 18, family: 'Noto Sans' },
+          marker: { 
+            color: col_obtenidos,
+            line: {color: col_estimados, width: 1}
+          },
+          hoverlabel: {
+            bgcolor: 'white',
+            font: { family: 'Noto Sans', color: 'black', size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false,
+          name: 'Pond. Obtenida',
+          hovertemplate: `<b>%{label}</b><br>Ponderación<br>%{text}<extra></extra>`,
+        }
+      ], 
+      {
+        title: {
+          text: `Ponderación obtenida vs estimada - ${unidad_deseada}, ${fecha_deseada}`,
+          font: { size: 24, color: "black" },
+          x: 0.5
+        },
+        /*yaxis: { title: "Valor" },*/
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.2)',
+          x: 3,
+          y: 3,
+          blur: 10
+        },
+        uniformtext: {
+          minsize: 14   // Tamaño mínimo de fuente
+        },
+        barmode: 'overlay',
+        xaxis: {
+          /*tickangle: -45, // Puedes probar con -90 si lo quieres vertical*/
+          tickfont: {
+            size: 16,
+            weight: 'bold'
+          }
+        }
+      }
+    ); // ranking2
+  }
+
+  function actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada){
+    //document.getElementById('div_ranking2-2').hidden = false;
+    //document.getElementById('ranking2-2').hidden = false;
+    datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+    console.log(datos_pond_fecha);
+    ponderaciones = analisisRanking(datos_pond_fecha, 'Delegacion');
+    console.log(ponderaciones, unidad_deseada);
+
+    const pond_unidad = Object.fromEntries(Object.entries(ponderaciones).filter(([unidad]) => unidad == unidad_deseada));
+    console.log(pond_unidad);
+    let grupo_indicadores = {};
+    if (pond_unidad[unidad_deseada]) {
+      const unidad = pond_unidad[unidad_deseada];
+      grupo_indicadores = Object.entries(unidad.inds);
+      document.getElementById('rank_2').innerHTML = unidad.pond_aju.toFixed(2);
+      document.getElementById('rank_unidad_2').style.background = colorByPonderacion(unidad.pond_aju).replace(",1)",",.8)");
+      document.getElementById('rank_unidad_2').style.color = textColorByPonderacion(unidad.pond_aju);
+      console.log(unidad);
+    } else{
+      console.log('No hay nada')
+      return;
+    }
+
+    const x_labels = grupo_indicadores.map(([nombre]) => nombre);
+    const estimados = grupo_indicadores.map(([_, valor]) => valor.pond_est);
+    const obtenidos = grupo_indicadores.map(([_, valor]) => valor.pond_obt);
+    const col_obtenidos = grupo_indicadores.map(([_, valor]) => {
+      const resultado = valor.pond_obt / valor.pond_est * 100;
+      return colorByPonderacion(resultado);
+    });
+    const col_estimados = grupo_indicadores.map(([_,valor]) => {
+      const resultado = valor.pond_obt / valor.pond_est * 100;
+      return colorByPonderacion(resultado).replace(",1)",",.25)");
+    });
+    const textos = x_labels.map((valor, i) => {
+      const estimado = estimados[i];
+      const obtenido = obtenidos[i];
+      const faltante = estimado - obtenido;
+      return `Obtenida: ${obtenido.toFixed(2)} <br>Estimada: ${estimado.toFixed(2)} <br>Faltante: ${faltante.toFixed(2)}`;
+    });
+    //console.log(x_labels, estimados, obtenidos, col_obtenidos, col_estimados);
+    Plotly.react("ranking2-2", 
+      [
+        {
+          type: "bar",
+          x: x_labels,
+          y: estimados,
+          cliponaxis: false,
+          textposition: 'outside',
+          texttemplate: '<b>%{y:.1f}</b>',
+          textfont: { size: 18, family: 'Noto Sans' },
+          marker: { 
+            color: col_estimados,
+            line: {color: col_estimados, width: 1}
+          },
+          hoverlabel: {
+            bgcolor: color_deseado,
+            font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false,
+          name: 'Pond. Estimada',
+          hoverinfo: 'none'
+        },
+        {
+          type: "bar",
+          x: x_labels,
+          y: obtenidos,
+          text: textos,
+          cliponaxis: false,
+          textposition: 'inside',
+          texttemplate: '<b>%{y:.1f}</b>',
+          textfont: { size: 18, family: 'Noto Sans' },
+          marker: { 
+            color: col_obtenidos,
+            line: {color: col_estimados, width: 1}
+          },
+          hoverlabel: {
+            bgcolor: 'white',
+            font: { family: 'Noto Sans', color: 'black', size: 20}
+          },
+          margin: { b: 150 },
+          showlegend: false,
+          name: 'Pond. Obtenida',
+          hovertemplate: `<b>%{label}</b><br>Ponderación<br>%{text}<extra></extra>`,
+        }
+      ], 
+      {
+        title: {
+          text: `Ponderación obtenida vs estimada - ${unidad_deseada}, ${fecha_deseada}`,
+          font: { size: 24, color: "black" },
+          x: 0.5
+        },
+        /*yaxis: { title: "Valor" },*/
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.2)',
+          x: 3,
+          y: 3,
+          blur: 10
+        },
+        uniformtext: {
+          minsize: 14   // Tamaño mínimo de fuente
+        },
+        barmode: 'overlay',
+        xaxis: {
+          /*tickangle: -45, // Puedes probar con -90 si lo quieres vertical*/
+          tickfont: {
+            size: 16,
+            weight: 'bold'
+          }
+        }
+      }
+    ); // ranking2
   }
 
   // -------------- COORDENADAS -------------------- //
@@ -1404,7 +1831,7 @@
   // ---------- RANKING ------------------ //
   nivel_deseado = 'Primer Nivel';
   procesos = ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'S.Ob'];
-  normativos = ['CUPN', 'CUSN', 'CVE', 'CES','CTE', 'IAAS'];
+  normativos = ['CUPN', 'CUSN', 'CVE', 'CES','CTE', 'IAAS', 'CIS'];
 
 
   fetch("https://script.google.com/macros/s/AKfycbz0f3Y7rHNwbWDwcgPWYdbQ-C-aACwyU4_4WliqSStqKaMidZXzMDKcxCWaGKNx4SuHMg/exec") //"https://script.google.com/macros/s/AKfycbxbdwnq17ukuBOPxtHR52a12NcrR4V5LiTujKCPFWMKoYztEFmIBk6pyeyHG2UwVMamog/exec")
@@ -1443,6 +1870,18 @@
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
     actualizarRankingPN(datos_pond, fecha_deseada);
     actualizarRankingSN(datos_pond, fecha_deseada);
+    //actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+    actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada);
+    document.getElementById('ranking_1N').hidden = true;
+    document.getElementById('ranking_2N').hidden = true;
+    document.getElementById('ranking2').hidden = true;
+    document.getElementById('ranking2-2').hidden = true;
+    // Set Oaxaca as selected
+    document.querySelectorAll("button").forEach(b => {
+      if (b.textContent == 'Oaxaca'){
+        b.classList.add('activo');
+      }
+    }); // remover estilo activo a todos.
     document.getElementById('loader-overlay').style.display = 'none';
     // Inicializar calendario
     console.log(fechas);
@@ -1567,29 +2006,53 @@
   ); // ranking_2N
 
   Plotly.newPlot("ranking2", 
-    [{
-      type: "bar",
-      x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
-      y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
-      cliponaxis: false,
-      texttemplate: ' ',
-      marker: { color: color_deseado },
-      hoverlabel: {
-        bgcolor: color_deseado,
-        font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+    [
+      {
+        type: "bar",
+        x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+        y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+        cliponaxis: false,
+        texttemplate: ' ',
+        marker: { 
+          color: 'rgba(0,88,78,1)',
+          line: {color: 'rgba(0,88,78,1)', width: 1}
+        },
+        hoverlabel: {
+          bgcolor: color_deseado,
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+        },
+        margin: { b: 150 },
+        showlegend: false,
+        name: 'Pond. Obtenida'
       },
-      margin: { b: 150 },
-      showlegend: false
-    }], 
+      {
+        type: "bar",
+        x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+        y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+        cliponaxis: false,
+        texttemplate: ' ',
+        marker: { 
+          color: 'rgba(0,88,78,.25)',
+          line: {color: 'rgba(0,88,78,1)', width: 1}
+        },
+        hoverlabel: {
+          bgcolor: color_deseado,
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+        },
+        margin: { b: 150 },
+        showlegend: false,
+        name: 'Pond. Faltante'
+      }
+    ], 
     {
       title: {
-        text: `Ponderación obtenida por indicador.`,
+        text: `Ponderación por grupo indicador.`,
         font: { size: 24, color: "black" },
         x: 0.5
       },
       yaxis: { title: "Valor" },
       plot_bgcolor: 'rgba(0,0,0,0)',
-      paper_bgcolor: '#f9f9f9',
+      paper_bgcolor: 'rgba(0,0,0,0)',
       shadow: {
         enabled: true,
         color: 'rgba(0,0,0,0.2)',
@@ -1599,9 +2062,74 @@
       },
       uniformtext: {
         minsize: 14   // Tamaño mínimo de fuente
-      }
+      },
+      barmode: 'stack'
     }
-  ); // ranking2
+  ); // ranking2  
+  document.getElementById('div_ranking2').hidden = true;
+
+  Plotly.newPlot("ranking2-2", 
+    [
+      {
+        type: "bar",
+        x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+        y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+        cliponaxis: false,
+        texttemplate: ' ',
+        marker: { 
+          color: 'rgba(0,88,78,1)',
+          line: {color: 'rgba(0,88,78,1)', width: 1}
+        },
+        hoverlabel: {
+          bgcolor: color_deseado,
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+        },
+        margin: { b: 150 },
+        showlegend: false,
+        name: 'Pond. Obtenida'
+      },
+      {
+        type: "bar",
+        x: ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'Sob y Obesidad', 'CUPN', 'CUSN'],
+        y: [1, 0.75, 0.5, 0.25, 1, 0.8, 0.5, 0.25, 0.6],
+        cliponaxis: false,
+        texttemplate: ' ',
+        marker: { 
+          color: 'rgba(0,88,78,.25)',
+          line: {color: 'rgba(0,88,78,1)', width: 1}
+        },
+        hoverlabel: {
+          bgcolor: color_deseado,
+          font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
+        },
+        margin: { b: 150 },
+        showlegend: false,
+        name: 'Pond. Faltante'
+      }
+    ], 
+    {
+      title: {
+        text: `Ponderación por grupo indicador.`,
+        font: { size: 24, color: "black" },
+        x: 0.5
+      },
+      yaxis: { title: "Valor" },
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      shadow: {
+        enabled: true,
+        color: 'rgba(0,0,0,0.2)',
+        x: 3,
+        y: 3,
+        blur: 10
+      },
+      uniformtext: {
+        minsize: 14   // Tamaño mínimo de fuente
+      },
+      barmode: 'stack'
+    }
+  ); // ranking2  
+  document.getElementById('div_ranking2-2').hidden = true;
 
   Plotly.newPlot("desempeños", 
     [{
@@ -1797,6 +2325,9 @@
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
       actualizarRankingPN(datos_pond, fecha_deseada);      
       actualizarRankingSN(datos_pond, fecha_deseada);
+      actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+      actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+      actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada);
     });
   });
 
@@ -1846,11 +2377,23 @@
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
-      document.getElementById('ranking_1N').hidden = false;
+      if (unidad_completa == 'UMAA Oaxaca'){
+        document.getElementById('ranking_1N').hidden = true;
+        document.getElementById('ranking2').hidden = true;
+        document.getElementById('rank_unidad_1').hidden = true; 
+      }else{
+        document.getElementById('ranking_1N').hidden = false;
+        document.getElementById('ranking2').hidden = false;
+        document.getElementById('rank_unidad_1').hidden = false; 
+      }
       if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
         document.getElementById('ranking_2N').hidden = false;
+        document.getElementById('ranking2-2').hidden = false;
+        document.getElementById('rank_unidad_2').hidden = false;
       } else{
         document.getElementById('ranking_2N').hidden = true;
+        document.getElementById('ranking2-2').hidden = true;
+        document.getElementById('rank_unidad_2').hidden = true;
       }
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
@@ -1865,6 +2408,8 @@
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
       actualizarRankingPN(datos_pond, fecha_deseada);
       actualizarRankingSN(datos_pond, fecha_deseada);
+      actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+      actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
     });    
     contenedor1.appendChild(btn);
   });
@@ -1881,10 +2426,24 @@
       console.log(unidad_completa);
       if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
         document.getElementById('ranking_1N').hidden = false;
+        document.getElementById('ranking2').hidden = false;
+        document.getElementById('rank_unidad_1').hidden = false;
       } else{
         document.getElementById('ranking_1N').hidden = true;
+        document.getElementById('ranking2').hidden = true;
+        document.getElementById('rank_unidad_1').hidden = true;
       }
-      document.getElementById('ranking_2N').hidden = false;
+      if (unidad_completa == 'Oaxaca'){
+        document.getElementById('ranking_1N').hidden = true;
+        document.getElementById('ranking_2N').hidden = true;
+        document.getElementById('ranking2').hidden = true;
+        document.getElementById('rank_unidad_2').hidden = false;
+        //document.getElementById('ranking2-2').hidden = true;
+      } else{
+        document.getElementById('ranking_2N').hidden = false;
+        document.getElementById('ranking2-2').hidden = false;
+        document.getElementById('rank_unidad_2').hidden = false;
+      }
       // Remover la clase activa de todos los botones
       document.querySelectorAll("#botones1 button", "#botones2 button").forEach(b => {
         document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
@@ -1898,6 +2457,11 @@
       actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
       actualizarRankingPN(datos_pond, fecha_deseada);
       actualizarRankingSN(datos_pond, fecha_deseada);
+      actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+      actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+      if (unidad_deseada == 'Oaxaca'){
+        actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada);
+      }
     });    
     contenedor2.appendChild(btn);
   });
