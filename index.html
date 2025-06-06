@@ -56,7 +56,7 @@
     .contenedor_3 {
       display: flex;
       gap: 20px; /* Espacio entre gráficos */
-      margin-bottom: 10px;
+      margin-bottom: 2px;
       margin-left: auto;
       margin-right: auto;
       width: var(--ancho);
@@ -310,8 +310,8 @@
       width: var(--ancho);
       align-items: center;
       /*height: 400px;  */
-      border-bottom: 5px solid rgba(0, 102, 87,1);/*rgba(16, 49, 52, 1);*/
-      margin-bottom: 10px;
+      border-bottom: 10px solid rgba(0, 102, 87,1);/*rgba(16, 49, 52, 1);*/
+      margin-bottom: 5px;
     }
     .botones{
       display: flex;
@@ -385,7 +385,7 @@
   <div id="loader-overlay">
     <div class="loader"></div>
   </div>
-  <div style="height: 100px;"></div>
+  <div style="height: 80px;"></div>
   <div class="contenedor-grid">
     <div class="calendario"> <!--- calendar-picker --->
       <div class="calendario-encabezado"> <!--- calendar-header --->
@@ -419,7 +419,6 @@
 
       <div class="botones" id="botones2"></div>
       <div class="botones" id="botones1"></div>
-
   </div>
 
   <div class="contenedor_vertical">    
@@ -1229,111 +1228,133 @@
   }
 
   function actualizarRankingPN(datos_pond, fecha_deseada){
-    datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
-    //console.log(datos_pond_fecha)
+    if (unidad_deseada == 'HGZ 03 Tuxtepec' | unidad_deseada == 'HGZ 01 Oaxaca' | unidad_deseada == 'UMAA Oaxaca'){
+      document.getElementById('ranking_1N').hidden = true;
+      document.getElementById('ranking2').hidden = true;
+    }
+    else{
+      document.getElementById('ranking_1N').hidden = false;
+      document.getElementById('ranking2').hidden = false;
 
-    ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
-    //console.log(ranking_nivel_1);
+      datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
+      //console.log(datos_pond_fecha)
 
-    const datosOrdenados_1 = Object.entries(ranking_nivel_1)
-      .map(([unidad, valores]) => ({
-        unidad,
-        pond_aju: valores.pond_aju,
-        color: valores.color
-      }))
-      .sort((a, b) => b.pond_aju - a.pond_aju);  // De mayor a menor
-    
-    const sumaTotal = datosOrdenados_1.reduce((acc, d) => acc + d.pond_aju, 0);
-    const promedio = sumaTotal / datosOrdenados_1.length;
-    datosOrdenados_1.push({
-      unidad: 'Promedio',
-      pond_aju: promedio,
-      color: 'deepskyblue'
-    })
-    datosOrdenados_1.sort((a, b) => b.pond_aju - a.pond_aju);
-    //console.log(datosOrdenados_1, typeof datosOrdenados_1);
-    const unidades = datosOrdenados_1.map(d => d.unidad); // etiquetas
-    const valores = datosOrdenados_1.map(d => d.pond_aju);
-    const colores_ranking = datosOrdenados_1.map(d => d.color);
-    const textos = datosOrdenados_1.map((valor, i) => {
-      const unidad = unidades[i];
-      const partes = unidad.split(' ');
-      return (partes.length >= 2) ? partes.slice(0, 2).join(' ') : partes[0];
-    })
+      ranking_nivel_1 = analisisRanking(datos_pond_fecha, 'Primer Nivel');
+      //console.log(ranking_nivel_1);
 
-    Plotly.react("ranking_1N",
-      [
-        {
-          type: "bar",
-          /*orientation: 'h',*/
-          x: unidades,
-          y: valores,
-          text: textos,
-          cliponaxis: false,
-          textposition: 'outside',
-          texttemplate: '<b>%{y:.2f}</b>',
-          /*textangle: -45,*/
-          textfont: {size: 25},
-          marker: { color: colores_ranking },
-          hovertemplate: '<b>%{text}</b><br>%{y:.4f}<extra></extra>',
-          hoverlabel: {
-            bgcolor: colores_ranking,
-            font: { family: 'Noto Sans', size: 25}
-          }
-        },
-        {
-          x: [unidad_deseada],
-          y: [valores[unidades.indexOf(unidad_deseada)]],
-          type: 'bar',
-          /*orientation: 'h',
-          name: 'Unidad resaltada',*/
-          marker: { 
-            color: colores_ranking[unidades.indexOf(unidad_deseada)],
-            line: {
-              color: 'rgba(0,0,0,0.3)', // Borde sutil
-              width: 8
+      const datosOrdenados_1 = Object.entries(ranking_nivel_1)
+        .map(([unidad, valores]) => ({
+          unidad,
+          pond_aju: valores.pond_aju,
+          color: valores.color
+        }))
+        .sort((a, b) => b.pond_aju - a.pond_aju);  // De mayor a menor
+      
+      const sumaTotal = datosOrdenados_1.reduce((acc, d) => acc + d.pond_aju, 0);
+      const promedio = sumaTotal / datosOrdenados_1.length;
+      datosOrdenados_1.push({
+        unidad: 'Promedio',
+        pond_aju: promedio,
+        color: 'deepskyblue'
+      })
+      datosOrdenados_1.sort((a, b) => b.pond_aju - a.pond_aju);
+      //console.log(datosOrdenados_1, typeof datosOrdenados_1);
+      const unidades = datosOrdenados_1.map(d => d.unidad); // etiquetas
+      const valores = datosOrdenados_1.map(d => d.pond_aju);
+      const colores_ranking = datosOrdenados_1.map(d => d.color);
+      const textos = datosOrdenados_1.map((valor, i) => {
+        const unidad = unidades[i];
+        const partes = unidad.split(' ');
+        return (partes.length >= 2) ? partes.slice(0, 2).join(' ') : partes[0];
+      })
+
+      Plotly.react("ranking_1N",
+        [
+          {
+            type: "bar",
+            /*orientation: 'h',*/
+            x: unidades,
+            y: valores,
+            text: textos,
+            cliponaxis: false,
+            textposition: 'outside',
+            texttemplate: '<b>%{y:.2f}</b>',
+            /*textangle: -45,*/
+            textfont: {size: 25},
+            marker: { color: colores_ranking },
+            hovertemplate: '<b>%{text}</b><br>%{y:.4f}<extra></extra>',
+            hoverlabel: {
+              bgcolor: colores_ranking,
+              font: { family: 'Noto Sans', size: 25}
             }
           },
-          hoverinfo: 'none',
-          hovertemplate: ''
-          /*width: [1.0]  // Ancho personalizado para esta barra*/
-        }
-      ],
-      {
-        barmode: 'overlay',
-        title: {
-          text: `Ranking de Primer Nivel, ${fecha_deseada}`,
-          font: { size: 24, color: "black" },
-          x: 0.5
-        },
-        height: 600,
-        /*xaxis: { title: "Valor" },*/
-        plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        shadow: {
-          enabled: true,
-          color: 'rgba(0,0,0,0.2)',
-          x: 3,
-          y: 3,
-          blur: 10
-        },
-        showlegend: false,
-        margin: { b: 150, l:90, r:10 },
-        uniformtext: {
-          minsize: 14   // Tamaño mínimo de fuente
-        },
-        padding: {b: 150},
-        xaxis: {
-          tickangle: -45, // Puedes probar con -90 si lo quieres vertical
-          tickfont: {
-            size: 12
+          {
+            x: [unidad_deseada],
+            y: [valores[unidades.indexOf(unidad_deseada)]],
+            type: 'bar',
+            /*orientation: 'h',
+            name: 'Unidad resaltada',*/
+            marker: { 
+              color: colores_ranking[unidades.indexOf(unidad_deseada)],
+              line: {
+                color: 'rgba(0,0,0,0.3)', // Borde sutil
+                width: 8
+              }
+            },
+            hoverinfo: 'none',
+            hovertemplate: ''
+            /*width: [1.0]  // Ancho personalizado para esta barra*/
+          }
+        ],
+        {
+          barmode: 'overlay',
+          title: {
+            text: `Ranking de Primer Nivel, ${fecha_deseada}`,
+            font: { size: 24, color: "black" },
+            x: 0.5
+          },
+          height: 600,
+          /*xaxis: { title: "Valor" },*/
+          plot_bgcolor: 'rgba(0,0,0,0)',
+          paper_bgcolor: 'rgba(0,0,0,0)',
+          shadow: {
+            enabled: true,
+            color: 'rgba(0,0,0,0.2)',
+            x: 3,
+            y: 3,
+            blur: 10
+          },
+          showlegend: false,
+          margin: { b: 150, l:90, r:10 },
+          uniformtext: {
+            minsize: 14   // Tamaño mínimo de fuente
+          },
+          padding: {b: 150},
+          xaxis: {
+            tickangle: -45, // Puedes probar con -90 si lo quieres vertical
+            tickfont: {
+              size: 12
+            }
           }
         }
-      }
-    ); // ranking_1N
+      ); // ranking_1N
+    }
   }
 
   function actualizarRankingSN(datos_pond, fecha_deseada){
+    if ((unidad_deseada == 'HGZ 03 Tuxtepec' | unidad_deseada == 'HGZ 01 Oaxaca' | unidad_deseada == 'HGZMF 02 Salina Cruz' | unidad_deseada == 'HGSMF 41 Huatulco')){
+      document.getElementById('ranking_2N').hidden = false;
+      document.getElementById('ranking2-2').hidden = false;
+    }
+    else{
+      document.getElementById('ranking_2N').hidden = true;
+      document.getElementById('ranking2-2').hidden = true;
+    }
+    if (unidad_deseada == 'Oaxaca'){
+      document.getElementById('ranking2-2').hidden = false;
+      document.getElementById('ranking_1N').hidden = true;
+      document.getElementById('ranking2').hidden = true;
+    }
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
     //console.log(datos_pond_fecha);
 
@@ -1433,6 +1454,13 @@
   }
 
   function actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada){
+    if (unidad_deseada == 'HGZ 03 Tuxtepec' | unidad_deseada == 'HGZ 01 Oaxaca' | unidad_deseada == 'UMAA Oaxaca'){
+      document.getElementById('rank_unidad_1').hidden = true;
+    }
+    else{
+      document.getElementById('rank_unidad_1').hidden = false;
+    }
+
     //document.getElementById('div_ranking2').hidden = false;
     //document.getElementById('ranking2').hidden = false;
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
@@ -1551,6 +1579,17 @@
   }
 
   function actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada){
+    if ((unidad_deseada == 'HGZ 03 Tuxtepec' | unidad_deseada == 'HGZ 01 Oaxaca' | unidad_deseada == 'HGZMF 02 Salina Cruz' | unidad_deseada == 'HGSMF 41 Huatulco')){
+      document.getElementById('rank_unidad_2').hidden = false;
+    }
+    else{
+      document.getElementById('rank_unidad_2').hidden = true;
+    }
+    if (unidad_deseada == 'Oaxaca'){
+      document.getElementById('rank_unidad_2').hidden = false;
+      document.getElementById('rank_unidad_1').hidden = true;
+    }
+
     //document.getElementById('div_ranking2-2').hidden = false;
     //document.getElementById('ranking2-2').hidden = false;
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
@@ -2437,6 +2476,7 @@
         document.getElementById('ranking_1N').hidden = true;
         document.getElementById('ranking_2N').hidden = true;
         document.getElementById('ranking2').hidden = true;
+        document.getElementById('ranking2-2').hidden = false;
         document.getElementById('rank_unidad_2').hidden = false;
         //document.getElementById('ranking2-2').hidden = true;
       } else{
@@ -2497,6 +2537,52 @@
     // console.log('click en:',punto);
     // Actualizando Graficas
     actualizarGrafica4(datos, unidad_deseada, indicador_deseado, desempeño);
+  });
+
+  document.getElementById('ranking_1N').on('plotly_click', function(data5) {
+    var punto = data5.points[0];
+    unidad_deseada = punto.x;
+    if (unidad_deseada != 'Promedio'){
+      document.getElementById('selected-unit').textContent = unidad_deseada;
+      datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+      indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+      actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+      actualizarRankingPN(datos_pond, fecha_deseada);
+      actualizarRankingSN(datos_pond, fecha_deseada);
+      actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+      actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+      document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
+        document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
+      });
+      document.querySelectorAll("button").forEach(b => {
+        if (b.textContent == unidad_deseada){
+          b.classList.add('activo');
+        }
+      });
+    }
+  });
+
+  document.getElementById('ranking_2N').on('plotly_click', function(data5) {
+    var punto = data5.points[0];
+    unidad_deseada = punto.x;
+    if (unidad_deseada != 'Promedio'){
+      document.getElementById('selected-unit').textContent = unidad_deseada;
+      datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+      indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+      actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+      actualizarRankingPN(datos_pond, fecha_deseada);
+      actualizarRankingSN(datos_pond, fecha_deseada);
+      actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+      actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+      document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
+        document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
+      });
+      document.querySelectorAll("button").forEach(b => {
+        if (b.textContent == unidad_deseada){
+          b.classList.add('activo');
+        }
+      });
+    }
   });
   </script>
 </body>
