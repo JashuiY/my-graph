@@ -1708,9 +1708,9 @@
       document.getElementById('rank_2').innerHTML = unidad.pond_aju.toFixed(2);
       document.getElementById('rank_unidad_2').style.background = colorByPonderacion(unidad.pond_aju).replace(",1)",",.8)");
       document.getElementById('rank_unidad_2').style.color = textColorByPonderacion(unidad.pond_aju);
-      console.log(unidad);
+      //console.log(unidad);
     } else{
-      console.log('No hay nada')
+      //console.log('No hay nada')
       return;
     }
 
@@ -2343,7 +2343,7 @@
       actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada);
       
       // Checar las disponibilidad del boton en header
-      console.log(fecha_deseada, fechas);
+      //console.log(fecha_deseada, fechas);
       if (fecha_deseada == fechas[fechas.length - 1]){
         document.getElementById('prev-month').disabled = false;
         document.getElementById('next-month').disabled = true;
@@ -2389,7 +2389,7 @@
       }
     });
     // Checar las disponibilidad del boton en header
-    console.log(fecha_deseada, fechas);
+    //console.log(fecha_deseada, fechas);
     if (fecha_deseada == fechas[fechas.length - 1]){
       document.getElementById('prev-month').disabled = false;
       document.getElementById('next-month').disabled = true;
@@ -2413,7 +2413,7 @@
     fecha_deseada = (`${meses[selectedMonth-1]} ${currentYear}`);//.toUpperCase();
 
     if (fecha_deseada == fechas[0]){
-      console.log('Es la primera fecha');
+      //console.log('Es la primera fecha');
       document.getElementById('prev-month').disabled = true;
       document.getElementById('next-month').disabled = false;
     } else{      
@@ -2473,7 +2473,7 @@
     // Evento click
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
-      console.log(unidad_completa);
+      //console.log(unidad_completa);
       selector.value = unidad_completa;
       if (unidad_completa == 'UMAA Oaxaca'){
         document.getElementById('ranking_1N').hidden = true;
@@ -2521,7 +2521,7 @@
 
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
-      console.log(unidad_completa);
+      //console.log(unidad_completa);
       selector.value = unidad_completa;
       if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
         document.getElementById('ranking_1N').hidden = false;
