@@ -55,7 +55,7 @@
     }
     .contenedor_3 {
       display: flex;
-      gap: 20px; /* Espacio entre gráficos */
+      gap: 10px; /* Espacio entre gráficos */
       margin-bottom: 2px;
       margin-left: auto;
       margin-right: auto;
@@ -286,7 +286,7 @@
       padding: 15px;
       border-radius: 12px;
       text-align: center;
-      font-size: 24px;
+      font-size: 20px;
       color: #006657;/*2E7D32*/
       margin-top: 5px;
       /*display: flex;*/
@@ -352,12 +352,86 @@
       text-align: center;
       border-radius: 12px;
       padding: 15px;
-      font-size: 24px;
+      font-size: 22px;
       justify-content: center;
     }
     .rank_title{
       font-size: 12px;
       font-weight: 500;
+    }
+    .compact-date-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(191, 236, 229, 0.3);
+      padding: 8px 15px;
+      border-radius: 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      width: fit-content;
+      display: none;
+      margin-left: auto;
+    }
+
+    .nav-btn-2 {
+      border: none;
+      background: none;
+      font-size: 12px;
+      cursor: pointer;
+      color: #006657;
+      /*width: 30px;*/
+      height: 30px;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+    .nav-btn-2:hover {
+      background: rgba(76, 175, 80, 0.1);
+      color: #0C917D;/*4CAF50*/
+      transform: scale(1.1);
+    }
+    .nav-btn-2:disabled {
+      /*background: rgba(0,0,0, 0.1);*/
+      color: rgba(0,0,0, 0.1);;/*4CAF50*/
+      transform: scale(1.1);
+    }
+    .month-display {
+      text-align: center;
+      min-width: 50px;
+      color: black;
+      /*font-weight: 300;*/
+    }
+
+    .compact-unit {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(191, 236, 229, 0.5);
+      padding: 8px 15px;
+      border-radius: 30px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      width: fit-content;
+      display: none;
+    }
+    #unidad_select {
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+      color: black;
+      background: #dff5f2;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    #unidad_select:hover {
+      background: #ecf9f7;
+    }
+    #unidad_select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(12, 145, 125, 0.25);
+    }
+    #unidad_select option {
+      background-color: #fff;
+      color: #000;
+      padding: 10px;
     }
 
   </style>
@@ -365,18 +439,35 @@
 <header>
   <div class="contenedor_3"> 
     <div class="selected-display">
-      <span id="selected-month">Septiembre</span>
-      <span id="selected-year">2023</span>
+      <span id="selected-month" class="selected-month">Septiembre</span>
+      <span id="selected-year" class="selected-year">2023</span>
       <span>-</span>
       <span id="selected-unit">Oaxaca</span>
     </div>
+
     <div class="rank_unidad" id="rank_unidad_1" hidden>
       <div class="rank_title" id="rank_title_1">1 Nivel</div>
       <span id="rank_1">71.5</span>
     </div>
+
     <div class="rank_unidad" id="rank_unidad_2">
       <div class="rank_title" id="rank_title_2">2 Nivel</div>
       <span id="rank_2">60.0</span>
+    </div>
+
+    <div class="compact-date-picker" id="fechas_chico" hidden>
+      <button class="nav-btn-2" id="prev-month"><i class="fa-solid fa-square-caret-left" style="font-size: 16px;"></i></button>      
+      <div class="month-display">
+        <span id="selected-month" class="selected-month">Septiembre</span>
+        <span id="selected-year" class="selected-year">2023</span>
+      </div>      
+      <button class="nav-btn-2" id="next-month"><i class="fa-solid fa-square-caret-right" style="font-size: 16px;"></i></button>
+    </div>
+
+    <div class="compact-unit" id="unidades_selector">
+      <select id="unidad_select">
+        <option></option>
+      </select>
     </div>
   </div>
   
@@ -387,7 +478,7 @@
   </div>
   <div style="height: 80px;"></div>
   <div class="contenedor-grid">
-    <div class="calendario"> <!--- calendar-picker --->
+    <div class="calendario" id="calendario"> <!--- calendar-picker --->
       <div class="calendario-encabezado"> <!--- calendar-header --->
         <button class="nav-btn previo"> <!--- nav-btn prev-year --->
           <i class="fa-solid fa-square-caret-left" style="font-size: 20px;"></i>
@@ -411,10 +502,6 @@
         <button class="month-btn" data-month="11">Nov</button>
         <button class="month-btn" data-month="12">Dic</button>
       </div>
-      <!---<div class="selected-display">
-        <span id="selected-month">Septiembre</span>
-        <span id="selected-year">2023</span>
-      </div>--->
     </div>
 
       <div class="botones" id="botones2"></div>
@@ -438,36 +525,7 @@
   </div>
 
   <div class="contenedor">
-    <!---<div class="calendario"> 
-      <div class="calendario-encabezado"> 
-        <button class="nav-btn previo"> 
-          <i class="fa-solid fa-square-caret-left" style="font-size: 20px;"></i>
-        </button>
-        <span class="año-actual">2023</span>
-        <button class="nav-btn siguiente">
-          <i class="fa-solid fa-square-caret-right" style="font-size: 20px;"></i>
-        </button>
-      </div>
-      <div class="month-grid">
-        <button class="month-btn" data-month="1">Ene</button>
-        <button class="month-btn" data-month="2">Feb</button>
-        <button class="month-btn" data-month="3">Mar</button>
-        <button class="month-btn" data-month="4">Abr</button>
-        <button class="month-btn" data-month="5">May</button>
-        <button class="month-btn" data-month="6">Jun</button>
-        <button class="month-btn" data-month="7">Jul</button>
-        <button class="month-btn" data-month="8">Ago</button>
-        <button class="month-btn" data-month="9">Sep</button>
-        <button class="month-btn" data-month="10">Oct</button>
-        <button class="month-btn" data-month="11">Nov</button>
-        <button class="month-btn" data-month="12">Dic</button>
-      </div>
-      <div class="selected-display">
-        <span id="selected-month">Septiembre</span>
-        <span id="selected-year">2023</span>
-      </div>
-    </div>--->
-
+    
     <div id="desempeños" class="grafica"></div>
   </div>
 
@@ -508,12 +566,6 @@
               <th style="padding: 8px; border: 1px none #ccc;" rowspan="1"; >Error</th>
               <th style="padding: 8px; border: 1px none #ccc;" colspan="1"; >Semaforización</th>
             </tr>
-            <!---
-            <tr style="background-color: #f0f0f0;">
-              <th style="padding: 8px; border: 1px none #ccc;">Actual</th>
-              <th style="padding: 8px; border: 1px none #ccc;">Posible</th>
-            </tr>
-            --->
           </thead>
           <tbody id="cuerpo_tabla_1">
             <!-- Las filas se llenarán desde JavaScript -->
@@ -525,6 +577,18 @@
   </div>
 
   <script>
+  // Función para actualizar el botón activo
+  function updateActiveButton(comparacion) {
+    document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
+      document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
+    });
+    document.querySelectorAll("button").forEach(b => {
+      if (b.textContent == comparacion){
+        b.classList.add('activo');
+      }
+    });
+  }
+
   function textColorByPonderacion(resultado){
     if (resultado >= 80) return 'rgba(255,255,255,1)';
     if (resultado >= 60) return 'rgba(0,0,0,1)';
@@ -817,80 +881,7 @@
 
     return conteo;
   }
-/*
-  function actualizarGrafica1(punto){
-    var latitud_seleccionada = punto.lat;
-    var longitud_seleccionada = punto.lon;
-    
-    Plotly.react('mapa', 
-      [{
-        type: 'scattergeo',
-        mode: 'markers',
-        lat: latitudes,  // latitudes
-        lon: longitudes, // longitudes
-        text: nombres,
-        marker: {
-          size: [
-            '15','15','15','15','15','20','15','15','20','15','20','15','15','15','15','15','15','15','15','15','15','15','15','15','15','15','20','20'],// [20, 30]
-          color: [
-            'green','green','green','green','green','coral','green','green','coral','green','coral','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','coral','coral']//['green', 'red']
-        },
-        showlegend: false
-      }],
-      {
-        title: {
-          text: `${unidad_deseada}`,
-          font: {
-            size: 24,
-            color: "black"
-          },
-          //xref: 'paper',
-          x: 0.5, // Centrado
-          xanchor: 'center'
-        },
-        geo: {
-          scope: "north america",  // o usa 'north america' si quieres limitar
-          projection: { type: "mercator" },
-          center: { lat: latitud_seleccionada, lon: longitud_seleccionada },
-          resolution: 60,
-          lonaxis: { range: [-100, -94] },  // ajusta el área visible si quieres
-          lataxis: { range: [16.3, 19.5] },
-          showland: true,
-          landcolor: "rgb(243, 243, 243)",
-          countrycolor: "rgb(204, 204, 204)",
-          projection: { scale: 1 }
-        },
-        //margin: { t: 50, b: 0, l: 0, r: 0 }
-      }
-    ); // mapa
-    
-    // Eliminar highlight anterior si existe
-    if (document.getElementById('mapa').data.length > 1) {
-      Plotly.deleteTraces('mapa', 1);
-    }
 
-    // Crear nuevo punto resaltado
-    Plotly.addTraces('mapa', {
-      type: 'scattergeo',
-      mode: 'markers',
-      lat: [latitud_seleccionada],
-      lon: [longitud_seleccionada],
-      marker: {
-        size: 30,
-        color: 'yellow',
-        opacity: 0.5,
-        line: {
-          width: 4,
-          color: 'gold'
-        }
-      },
-      hoverinfo: 'skip',  // Opcional, para que no muestre tooltip
-      showlegend: false
-    }).then((res) => {
-      console.log('Resaltando punto');
-    });
-  }
-*/
   function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
@@ -1029,7 +1020,6 @@
             //bordercolor: '#000000',
             font: { family: 'Noto Sans', color: (color_deseado=='orange' ? 'black':'white'), size: 20}
           },
-          margin: { b: 150 },
           showlegend: false
         },
         // Línea de pasos (valores esperados)
@@ -1057,10 +1047,11 @@
         }
       ], {
         title: {
-          text: `Indicadores con desempeño ${desempeño}, ${mes_deseado} ${año_deseado}`,
+          text: `Indicadores con desempeño ${desempeño}, ${fecha_deseada}`,
           font: { size: 24, color: "black" },
           x: 0.5
         },
+        margin: { b: 100 },
         //xaxis: { title: "Indicador" },
         yaxis: { title: "Valor" },
         plot_bgcolor: 'rgba(0,0,0,0)',
@@ -1710,12 +1701,12 @@
     //document.getElementById('div_ranking2-2').hidden = false;
     //document.getElementById('ranking2-2').hidden = false;
     datos_pond_fecha = filtrarFecha(datos_pond, fecha_deseada);
-    console.log(datos_pond_fecha);
+    //console.log(datos_pond_fecha);
     ponderaciones = analisisRanking(datos_pond_fecha, 'Delegacion');
-    console.log(ponderaciones, unidad_deseada);
+    //console.log(ponderaciones, unidad_deseada);
 
     const pond_unidad = Object.fromEntries(Object.entries(ponderaciones).filter(([unidad]) => unidad == unidad_deseada));
-    console.log(pond_unidad);
+    //console.log(pond_unidad);
     let grupo_indicadores = {};
     if (pond_unidad[unidad_deseada]) {
       const unidad = pond_unidad[unidad_deseada];
@@ -1829,11 +1820,6 @@
                17.0782,17.0701,17.0672,16.8664,17.2101,17.2411,17.2818,17.7983,15.8635,18.1312,16.3395,17.6718,17.0723,17.0720];
   longitudes = [-94.1915,-94.7655,-95.0146,-95.0882,-95.0962,-95.2019,-95.2329,-95.8807,-96.1296,-96.1378,-96.1379,-96.4722,-96.4871,-96.6764,
                 -96.7043,-96.7220,-96.7358,-96.7863,-96.7980,-96.8207,-96.8925,-96.9602,-97.0703,-97.0765,-98.0453,-97.5652,-96.7212,-96.7207];
-  /*unidades = ['UMF 30 San Pedro Tapanatepec','UMF 12 Sto. Domingo Ingenio','UMF 06 Juchitán','UMF 23 Cd. Ixtepec','UMF 29 Barrio La Soledad',
-             'HGZMF 02 Salina Cruz','UMF 05 Sto.Dgo.Tehuantepec','UMF 59 Loma Bonita','HGSMF 41 Huatulco','UMF 64 Tuxtepec','HGZ 03 Tuxtepec',
-             'UMF 33 Pedro Pochutla','UMF 40 Ixtlan de Juárez','UMF 27 Ocotlán','UMF 65 Sta Lucia del Camino','UMF 01 Oaxaca','UMF 38 FFCC.',
-             'UMF 31 Zimatlán de Álvarez','UMF 57 San Pablo Villa de Etla','UMF 17 Magdalena Apasco','UMF 56 San Pablo Huitzo','UMF 13 Cuicatlán',
-             'UMF 32 Puerto Escondido','UMF 58 Teotitlán','UMF 26 Pinotepa','UMRM 21 Tamazulapan','HGZ 01 Oaxaca','UMAA Oaxaca'];*/
 
   unidades1 = ['UMF 01 Oaxaca','UMF 38 FFCC.','UMF 65 Sta Lucia del Camino','UMF 64 Tuxtepec','UMF 13 Cuicatlán','UMF 05 Sto.Dgo.Tehuantepec',
               'UMF 06 Juchitán','UMF 17 Magdalena Apasco','UMF 12 Sto. Domingo Ingenio','UMF 23 Cd. Ixtepec','UMF 27 Ocotlán','UMF 31 Zimatlán de Álvarez',
@@ -1846,9 +1832,7 @@
               'UMF 30 San Pedro Tapanatepec','UMF 40 Ixtlan de Juárez','UMF 32 Puerto Escondido','UMF 33 Pedro Pochutla','UMF 29 Barrio La Soledad',
               'UMF 26 Pinotepa','UMF 58 Teotitlán','UMF 57 San Pablo Villa de Etla','UMF 56 San Pablo Huitzo','UMF 59 Loma Bonita','UMRM 21 Tamazulapan','UMAA Oaxaca',
               'HGZ 01 Oaxaca','HGZMF 02 Salina Cruz','HGZ 03 Tuxtepec','HGSMF 41 Huatulco','Oaxaca'];
-  /*unidades1 = ['UMF 01','UMF 38','UMF 65','UMF 64','UMF 13','UMF 05','UMF 06','UMF 17','UMF 12','UMF 23','UMF 27','UMF 31','UMF 30','UMF 40','UMF 32',
-                'UMF 33','UMF 29','UMF 26','UMF 58','UMF 57','UMF 56','UMF 59','UMRM 21','UMAA','HGZ 01','HGZMF 02','HGZ 03','HGSMF 41','Oaxaca'];
-  unidades2 = ['HGZ 01','HGZMF 02','HGZ 03','HGSMF 41','Oaxaca'];*/
+    
   const meses = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
@@ -1871,6 +1855,26 @@
   nivel_deseado = 'Primer Nivel';
   procesos = ['DM', 'EH', 'CAMama', 'CACU', 'Materna', 'Neonatal', 'S.Ob'];
   normativos = ['CUPN', 'CUSN', 'CVE', 'CES','CTE', 'IAAS', 'CIS'];
+
+  // ---------- HEADER HIDE/UNHIDE ----------- //
+  const fechas_1 = document.getElementById('calendario');
+  const fechas_2 = document.getElementById('fechas_chico');
+  const unidades_1 = document.getElementById('unidades_selector');
+
+  const selector = document.getElementById('unidad_select');
+
+  // ----------- FECHAS ------- //
+
+  window.addEventListener('scroll', () => {
+    const rect = fechas_1.getBoundingClientRect();
+    if (rect.bottom < 0) {
+      fechas_2.style.display = 'flex'; 
+      unidades_1.style.display = 'flex';
+    } else {
+      fechas_2.style.display = 'none';
+      unidades_1.style.display = 'none';
+    }
+  });
 
 
   fetch("https://script.google.com/macros/s/AKfycbz0f3Y7rHNwbWDwcgPWYdbQ-C-aACwyU4_4WliqSStqKaMidZXzMDKcxCWaGKNx4SuHMg/exec") //"https://script.google.com/macros/s/AKfycbxbdwnq17ukuBOPxtHR52a12NcrR4V5LiTujKCPFWMKoYztEFmIBk6pyeyHG2UwVMamog/exec")
@@ -1926,50 +1930,18 @@
     console.log(fechas);
     updateYearDisplay();
     updateSelectedMonth();
-  });
-/*
-  Plotly.newPlot('mapa', 
-    [{
-      type: 'scattergeo',
-      mode: 'markers',
-      lat: latitudes,  // latitudes
-      lon: longitudes, // longitudes
-      text: nombres,
-      marker: {
-        size: [
-          '15','15','15','15','15','20','15','15','20','15','20','15','15','15','15','15','15','15','15','15','15','15','15','15','15','15','20','20'],// [20, 30]
-        color: [
-          'green','green','green','green','green','coral','green','green','coral','green','coral','green','green','green','green','green','green','green','green','green','green','green','green','green','green','green','coral','coral']//['green', 'red']
-      },
-      showlegend: false
-    }],
-    {
-      title: {
-        text: 'Ubicación de Unidades de OOAD OAXACA',
-        font: {
-          size: 24,
-          color: "black"
-        },
-        //xref: 'paper',
-        x: 0.5, // Centrado
-        xanchor: 'center'
-      },
-      geo: {
-        scope: "north america",  // o usa 'north america' si quieres limitar
-        projection: { type: "mercator" },
-        center: { lat: 17.2, lon: -96.2 },
-        resolution: 150,
-        lonaxis: { range: [-100, -94] },  // ajusta el área visible si quieres
-        lataxis: { range: [16.3, 19.5] },
-        showland: true,
-        landcolor: "rgb(243, 243, 243)",
-        countrycolor: "rgb(204, 204, 204)",
-        projection: { scale: 1 }
-      },
-      //margin: { t: 50, b: 0, l: 0, r: 0 }
+    if (fecha_deseada == fechas[fechas.length - 1]){
+      document.getElementById('prev-month').disabled = false;
+      document.getElementById('next-month').disabled = true;
+    } else if (fecha_deseada == fechas[0]){      
+      document.getElementById('prev-month').disabled = true;
+      document.getElementById('next-month').disabled = false;
+    } else{
+      document.getElementById('prev-month').disabled = false;
+      document.getElementById('next-month').disabled = false;
     }
-  ); // mapa
-*/
+  });
+
   Plotly.newPlot("ranking_1N",
     [{
       type: "bar",
@@ -2372,7 +2344,8 @@
 
   function updateYearDisplay() {
     document.querySelector('.año-actual').textContent = currentYear;
-    document.getElementById('selected-year').textContent = currentYear;
+    document.getElementsByClassName('selected-year')[0].textContent = currentYear;
+    document.getElementsByClassName('selected-year')[1].textContent = currentYear;
 
     // Actualizar estado habilitado/deshabilitado de botones de mes
     document.querySelectorAll('.month-btn').forEach(btn => {
@@ -2390,7 +2363,8 @@
   }
 
   function updateSelectedMonth() {
-    document.getElementById('selected-month').textContent = meses[selectedMonth-1];
+    document.getElementsByClassName('selected-month')[0].textContent = meses[selectedMonth-1];
+    document.getElementsByClassName('selected-month')[1].textContent = meses[selectedMonth-1];
     
     // Resaltar el mes actual
     document.querySelectorAll('.month-btn').forEach(btn => {
@@ -2400,6 +2374,63 @@
       }
     });
   }
+
+  document.getElementById('prev-month').addEventListener('click', () => {    
+    selectedMonth--;
+    if (selectedMonth < 1) {
+      selectedMonth = 12;
+      currentYear--;
+    }
+    updateSelectedMonth();
+    updateYearDisplay();
+    fecha_deseada = (`${meses[selectedMonth-1]} ${currentYear}`);//.toUpperCase();
+
+    if (fecha_deseada == fechas[0]){
+      console.log('Es la primera fecha');
+      document.getElementById('prev-month').disabled = true;
+      document.getElementById('next-month').disabled = false;
+    } else{      
+      document.getElementById('prev-month').disabled = false;
+      document.getElementById('next-month').disabled = false;
+    }
+
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+    indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+    actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+    actualizarRankingPN(datos_pond, fecha_deseada);      
+    actualizarRankingSN(datos_pond, fecha_deseada);
+    actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+    actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+    actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada);    
+  });
+
+  document.getElementById('next-month').addEventListener('click', () => {
+    selectedMonth++;
+    if (selectedMonth > 12) {
+      selectedMonth = 1;
+      currentYear++;
+    }
+    updateSelectedMonth();
+    updateYearDisplay();
+    fecha_deseada = (`${meses[selectedMonth-1]} ${currentYear}`);//.toUpperCase();
+
+    if (fecha_deseada == fechas[fechas.length - 1]){
+      document.getElementById('prev-month').disabled = false;
+      document.getElementById('next-month').disabled = true;
+    } else{      
+      document.getElementById('prev-month').disabled = false;
+      document.getElementById('next-month').disabled = false;
+    }
+
+    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
+    indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
+    actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+    actualizarRankingPN(datos_pond, fecha_deseada);      
+    actualizarRankingSN(datos_pond, fecha_deseada);
+    actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+    actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+    actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada); 
+  });
 
   console.log('Terminó una gráfica, empezando a comunicarse.');
   document.getElementById('loader-overlay').style.display = 'flex';
@@ -2416,6 +2447,7 @@
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
+      selector.value = unidad_completa;
       if (unidad_completa == 'UMAA Oaxaca'){
         document.getElementById('ranking_1N').hidden = true;
         document.getElementById('ranking2').hidden = true;
@@ -2463,6 +2495,7 @@
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
       console.log(unidad_completa);
+      selector.value = unidad_completa;
       if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
         document.getElementById('ranking_1N').hidden = false;
         document.getElementById('ranking2').hidden = false;
@@ -2506,20 +2539,36 @@
     contenedor2.appendChild(btn);
   });
 
-/*
-  document.getElementById("mapa").on('plotly_click', function(data2) {
-    var punto = data2.points[0];
-    unidad_deseada = punto.text;
-    console.log("Clic en:", unidad_deseada, punto);
-    n_indicadores = "--";
-
-    // Actualizando Graficas
-    actualizarGrafica1(punto);
+  selector.addEventListener('change', () => {
+    const value = selector.value;
+    unidad_deseada = value;
     datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
     indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
     actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
+    actualizarRankingPN(datos_pond, fecha_deseada);
+    actualizarRankingSN(datos_pond, fecha_deseada);
+    actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
+    actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
+    updateActiveButton(unidad_deseada);
   });
-*/
+
+  // Limpiar opciones existentes (si las hay)
+  selector.innerHTML = '';
+
+  // Agregar opciones basadas en tus arrays
+  unidades1.forEach((unidad) => {
+    const option = document.createElement("option");
+    option.value = unidad; 
+    option.textContent = unidad;  // Usar el primer array para el texto visible
+    selector.appendChild(option);
+  });
+  unidades2.forEach((unidad) => {
+    const option = document.createElement("option");
+    option.value = unidad; 
+    option.textContent = unidad;  // Usar el primer array para el texto visible
+    selector.appendChild(option);
+  });
+
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
     desempeño = punto.label;
@@ -2543,6 +2592,7 @@
     var punto = data5.points[0];
     unidad_deseada = punto.x;
     if (unidad_deseada != 'Promedio'){
+      selector.value = unidad_deseada;
       document.getElementById('selected-unit').textContent = unidad_deseada;
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
@@ -2551,14 +2601,7 @@
       actualizarRankingSN(datos_pond, fecha_deseada);
       actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
       actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
-      document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
-        document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
-      });
-      document.querySelectorAll("button").forEach(b => {
-        if (b.textContent == unidad_deseada){
-          b.classList.add('activo');
-        }
-      });
+      updateActiveButton(unidad_deseada);
     }
   });
 
@@ -2566,6 +2609,7 @@
     var punto = data5.points[0];
     unidad_deseada = punto.x;
     if (unidad_deseada != 'Promedio'){
+      selector.value = unidad_deseada;
       document.getElementById('selected-unit').textContent = unidad_deseada;
       datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
       indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
@@ -2574,16 +2618,10 @@
       actualizarRankingSN(datos_pond, fecha_deseada);
       actualizarRanking2_1(datos_pond, unidad_deseada, fecha_deseada);
       actualizarRanking2_2(datos_pond, unidad_deseada, fecha_deseada);
-      document.querySelectorAll("#botones2 button","#botones1 button").forEach(b => {
-        document.querySelectorAll("button").forEach(b => b.classList.remove("activo")); // remover estilo activo a todos.
-      });
-      document.querySelectorAll("button").forEach(b => {
-        if (b.textContent == unidad_deseada){
-          b.classList.add('activo');
-        }
-      });
+      updateActiveButton(unidad_deseada);
     }
   });
+
   </script>
 </body>
 </html>
