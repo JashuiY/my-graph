@@ -48,6 +48,7 @@
       display: flex;
       gap: 20px; /* Espacio entre gráficos */
       margin-bottom: 20px;
+      /*margin-left: auto;*/
       margin-right: auto;
       width: 50%;
       align-items: center;
@@ -63,6 +64,7 @@
     }
     .grafica {
       flex: 1;
+      /*height: 500px;*/
     }
     #mapa {
       flex: 1;
@@ -77,17 +79,20 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       font-family: 'Noto Sans';/*''Segoe UI', system-ui, sans-serif';*/
       border: 1px solid rgba(0,0,0,0.05);
+      /*overflow: hidden;*/
       margin-left: auto;
       margin-right: auto;
     }
     #ranking_1N, #ranking_2N, #ranking2, #ranking2-2 {
       width: 100%;
+      /*height: 500px;*/
       background: white;
       border-radius: 16px;
       padding: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       font-family: 'Noto Sans';/*''Segoe UI', system-ui, sans-serif';*/
       border: 1px solid rgba(0,0,0,0.05);
+      /*overflow: hidden;*/
       margin-left: auto;
       margin-right: auto;
     }
@@ -99,6 +104,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       font-family: 'Noto Sans';/*''Segoe UI', system-ui, sans-serif';*/
       border: 1px solid rgba(0,0,0,0.05);
+      /*overflow: hidden;*/
       margin-left: auto;
       margin-right: auto;
     }
@@ -110,6 +116,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       font-family: 'Noto Sans';/*''Segoe UI', system-ui, sans-serif';*/
       border: 1px solid rgba(0,0,0,0.05);
+      /*overflow: hidden;*/
       margin-left: auto;
       margin-right: auto;
     }
@@ -277,19 +284,24 @@
       background: rgba(0, 178, 152,0.25);/*rgba(208, 184, 166, 0.1);rgba(76, 175, 80, 0.08)*/
       padding: 8px 15px;
       border-radius: 12px;
-      text-align: center;
-      font-size: 20px;
+      text-align: left;
+      vertical-align: center;
+      font-size: 22px;
       color: #006657;/*2E7D32*/
       margin-top: 5px;
       justify-content: center;
       gap: 10px;
-      min-height: 30px;
+      min-height: 46px;
+      width: 300px;
+      align-items: center;
     }
     #selected-month {
       font-weight: 600;
+      align-items: center;
     }
     #selected-year {
       opacity: 0.8;
+      align-items: center;
     }
 
     .contenedor-grid{
@@ -337,6 +349,7 @@
       margin-top: auto;
     }
     .rank_unidad {
+      /*flex: 1;*/
       background: rgba(0, 0, 0, 0.25);
       color: #000000;
       font-weight: 600;
@@ -352,6 +365,7 @@
       font-size: 12px;
       font-weight: 500;
     }
+    
     .compact-date-picker {
       display: flex;
       align-items: center;
@@ -360,21 +374,24 @@
       padding: 8px 15px;
       border-radius: 30px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      /*min-width: 200px;*/
       width: fit-content;
       display: none;
       margin-left: auto;
       height: 30px;
     }
-
     .nav-btn-2 {
       border: none;
       background: none;
       font-size: 12px;
       cursor: pointer;
       color: #006657;
+      /*width: 30px;*/
       height: 30px;
       border-radius: 50%;
       transition: all 0.3s;
+      margin-right: auto;
+      margin-left: auto;
     }
     .nav-btn-2:hover {
       background: rgba(76, 175, 80, 0.1);
@@ -382,13 +399,15 @@
       transform: scale(1.1);
     }
     .nav-btn-2:disabled {
+      /*background: rgba(0,0,0, 0.1);*/
       color: rgba(0,0,0, 0.1);;/*4CAF50*/
       transform: scale(1.1);
     }
     .month-display {
       text-align: center;
-      min-width: 50px;
+      min-width: 130px;
       color: black;
+      /*font-weight: 300;*/
     }
 
     .compact-unit {
@@ -411,11 +430,15 @@
       font-size: 16px;
       text-align: center;
       color: black;
+      /*background: linear-gradient(to bottom, #f5f5f5, #ecf9f7);
+      background: linear-gradient(to bottom, #ecf9f7, #dff5f2);*/
       background: #dff5f2;
+      /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
       cursor: pointer;
       transition: all 0.3s;
     }
     #unidad_select:hover {
+      /*background: linear-gradient(to bottom, #ecf9f7, #dff5f2);*/
       background: #ecf9f7;
     }
     #unidad_select:focus {
@@ -519,7 +542,6 @@
   </div>
 
   <div class="contenedor">
-
     <div id="desempeños" class="grafica"></div>
   </div>
 
@@ -875,7 +897,7 @@
 
     return conteo;
   }
-    
+
   function actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño) {
     const datosFiltrados = filtrarUnidadFecha(datos, unidad_deseada, fecha_deseada);
     const conteo = contarColores(datosFiltrados);
@@ -1092,9 +1114,7 @@
         <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center;"><span style="color: ${color_deseado};">■</span><span style="font-size:25px;">➔</span><span style="color: ${colores_2[i]};">■</span></td>
         
       `;
-      // <td style="padding: 1px; border: 1px solid #ccc; font-size:40px; text-align:center; color:${colores_[i]};">■</td>
-      cuerpoTabla_1.appendChild(fila);
-      //document.getElementById('texto_1').innerHTML += (`<br>${} &ensp; Le falta ${} para llegar al nivel ${desempeño_2}.`);      
+      cuerpoTabla_1.appendChild(fila);    
     }
     return indicadores2;
   }
@@ -1104,14 +1124,14 @@
     console.log(unidad_deseada, indicador_deseado);
     datosConError = filtrarErrores(datosFiltrados3);
     //console.log(datosConError, datosFiltrados3);
-    // console.log('DATOS FILTRADOS 3: ',datosFiltrados3);
+    //console.log('DATOS FILTRADOS 3: ',datosFiltrados3);
     // Crear arrays para la gráfica
     fechas = datosFiltrados3.map(row => row['fecha']);
     const valores = datosFiltrados3.map(row => row['valor']);
     const colores = datosFiltrados3.map(row => row['color']);
     //const textos = datosFiltrados3.map(row => row['valor'].toFixed(2));
     const nombres_indicadores = datosFiltrados3.map(row => row['nombre_indicador']);
-    // console.log(textos);
+    //console.log(textos);
     const nombre_indicador = nombres_indicadores[0];
     const nombre_formateado = insertarSaltosLinea(nombre_indicador, 80);
 
@@ -1708,9 +1728,9 @@
       document.getElementById('rank_2').innerHTML = unidad.pond_aju.toFixed(2);
       document.getElementById('rank_unidad_2').style.background = colorByPonderacion(unidad.pond_aju).replace(",1)",",.8)");
       document.getElementById('rank_unidad_2').style.color = textColorByPonderacion(unidad.pond_aju);
-      //console.log(unidad);
+      console.log(unidad);
     } else{
-      //console.log('No hay nada')
+      console.log('No hay nada')
       return;
     }
 
@@ -1814,11 +1834,6 @@
                17.0782,17.0701,17.0672,16.8664,17.2101,17.2411,17.2818,17.7983,15.8635,18.1312,16.3395,17.6718,17.0723,17.0720];
   longitudes = [-94.1915,-94.7655,-95.0146,-95.0882,-95.0962,-95.2019,-95.2329,-95.8807,-96.1296,-96.1378,-96.1379,-96.4722,-96.4871,-96.6764,
                 -96.7043,-96.7220,-96.7358,-96.7863,-96.7980,-96.8207,-96.8925,-96.9602,-97.0703,-97.0765,-98.0453,-97.5652,-96.7212,-96.7207];
-  /*unidades = ['UMF 30 San Pedro Tapanatepec','UMF 12 Sto. Domingo Ingenio','UMF 06 Juchitán','UMF 23 Cd. Ixtepec','UMF 29 Barrio La Soledad',
-             'HGZMF 02 Salina Cruz','UMF 05 Sto.Dgo.Tehuantepec','UMF 59 Loma Bonita','HGSMF 41 Huatulco','UMF 64 Tuxtepec','HGZ 03 Tuxtepec',
-             'UMF 33 Pedro Pochutla','UMF 40 Ixtlan de Juárez','UMF 27 Ocotlán','UMF 65 Sta Lucia del Camino','UMF 01 Oaxaca','UMF 38 FFCC.',
-             'UMF 31 Zimatlán de Álvarez','UMF 57 San Pablo Villa de Etla','UMF 17 Magdalena Apasco','UMF 56 San Pablo Huitzo','UMF 13 Cuicatlán',
-             'UMF 32 Puerto Escondido','UMF 58 Teotitlán','UMF 26 Pinotepa','UMRM 21 Tamazulapan','HGZ 01 Oaxaca','UMAA Oaxaca'];*/
 
   unidades1 = ['UMF 01 Oaxaca','UMF 38 FFCC.','UMF 65 Sta Lucia del Camino','UMF 64 Tuxtepec','UMF 13 Cuicatlán','UMF 05 Sto.Dgo.Tehuantepec',
               'UMF 06 Juchitán','UMF 17 Magdalena Apasco','UMF 12 Sto. Domingo Ingenio','UMF 23 Cd. Ixtepec','UMF 27 Ocotlán','UMF 31 Zimatlán de Álvarez',
@@ -1831,9 +1846,6 @@
               'UMF 30 San Pedro Tapanatepec','UMF 40 Ixtlan de Juárez','UMF 32 Puerto Escondido','UMF 33 Pedro Pochutla','UMF 29 Barrio La Soledad',
               'UMF 26 Pinotepa','UMF 58 Teotitlán','UMF 57 San Pablo Villa de Etla','UMF 56 San Pablo Huitzo','UMF 59 Loma Bonita','UMRM 21 Tamazulapan','UMAA Oaxaca',
               'HGZ 01 Oaxaca','HGZMF 02 Salina Cruz','HGZ 03 Tuxtepec','HGSMF 41 Huatulco','Oaxaca'];
-  /*unidades1 = ['UMF 01','UMF 38','UMF 65','UMF 64','UMF 13','UMF 05','UMF 06','UMF 17','UMF 12','UMF 23','UMF 27','UMF 31','UMF 30','UMF 40','UMF 32',
-                'UMF 33','UMF 29','UMF 26','UMF 58','UMF 57','UMF 56','UMF 59','UMRM 21','UMAA','HGZ 01','HGZMF 02','HGZ 03','HGSMF 41','Oaxaca'];
-  unidades2 = ['HGZ 01','HGZMF 02','HGZ 03','HGSMF 41','Oaxaca'];*/
   const meses = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
@@ -2343,7 +2355,7 @@
       actualizarRanking2_3(datos_pond, unidad_deseada, fecha_deseada);
       
       // Checar las disponibilidad del boton en header
-      //console.log(fecha_deseada, fechas);
+      console.log(fecha_deseada, fechas);
       if (fecha_deseada == fechas[fechas.length - 1]){
         document.getElementById('prev-month').disabled = false;
         document.getElementById('next-month').disabled = true;
@@ -2389,7 +2401,7 @@
       }
     });
     // Checar las disponibilidad del boton en header
-    //console.log(fecha_deseada, fechas);
+    console.log(fecha_deseada, fechas);
     if (fecha_deseada == fechas[fechas.length - 1]){
       document.getElementById('prev-month').disabled = false;
       document.getElementById('next-month').disabled = true;
@@ -2413,7 +2425,7 @@
     fecha_deseada = (`${meses[selectedMonth-1]} ${currentYear}`);//.toUpperCase();
 
     if (fecha_deseada == fechas[0]){
-      //console.log('Es la primera fecha');
+      console.log('Es la primera fecha');
       document.getElementById('prev-month').disabled = true;
       document.getElementById('next-month').disabled = false;
     } else{      
@@ -2473,7 +2485,7 @@
     // Evento click
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
-      //console.log(unidad_completa);
+      console.log(unidad_completa);
       selector.value = unidad_completa;
       if (unidad_completa == 'UMAA Oaxaca'){
         document.getElementById('ranking_1N').hidden = true;
@@ -2521,7 +2533,7 @@
 
     btn.addEventListener("click", () => {
       unidad_completa = nombres_unidades.find(nombre => nombre.startsWith(unidad));
-      //console.log(unidad_completa);
+      console.log(unidad_completa);
       selector.value = unidad_completa;
       if (unidad_completa == 'HGSMF 41 Huatulco' || unidad_completa == 'HGZMF 02 Salina Cruz'){
         document.getElementById('ranking_1N').hidden = false;
@@ -2597,20 +2609,6 @@
     selector.appendChild(option);
   });
 
-/*
-  document.getElementById("mapa").on('plotly_click', function(data2) {
-    var punto = data2.points[0];
-    unidad_deseada = punto.text;
-    console.log("Clic en:", unidad_deseada, punto);
-    n_indicadores = "--";
-
-    // Actualizando Graficas
-    actualizarGrafica1(punto);
-    datosFiltrados = actualizarGrafica2(datos, unidad_deseada, fecha_deseada, desempeño);
-    indicadores_d = actualizarGrafica3(datosFiltrados, desempeño); // devuelve lista de indicadores graficados.
-    actualizarGrafica4(datos, unidad_deseada, indicadores_d[0], desempeño);
-  });
-*/
   document.getElementById("desempeños").on('plotly_click', function(data3) {
     var punto = data3.points[0];
     desempeño = punto.label;
